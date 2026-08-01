@@ -1010,7 +1010,25 @@ async function createVideoPlayer(url) {
       hlsInstance.on(Hls.Events.AUDIO_TRACKS_UPDATED, () => { _detectHlsTracks(); });
       hlsInstance.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, () => { _detectHlsTracks(); });
       hlsInstance.on(Hls.Events.ERROR, (e, data) => {
-        if (data.fatal) showNotification('HLS stream error', 'error');
+        if (!data.fatal) return;
+        console.warn('[HLS] Fatal error:', data.type, data.details);
+        hlsInstance.destroy();
+        hlsInstance = null;
+
+        // On fatal error, try a reliable MP4 fallback so the player never stays blank.
+        // Pick a different clip than the primary fallback to increase variety.
+        const FATAL_FALLBACK_STREAMS = [
+          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+        ];
+        const fallbackMp4 = FATAL_FALLBACK_STREAMS[Math.floor(Math.random() * FATAL_FALLBACK_STREAMS.length)];
+
+        showNotification('Stream unavailable — loading demo clip', 'info');
+        // Set src directly (MP4, no hls.js needed) so video.error won't fire
+        video.src = fallbackMp4;
+        video.load();
+        video.play().catch(() => {});
       });
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = processedUrl;
@@ -1218,7 +1236,11 @@ function createBaseVideoElement() {
   // Older iOS WebKit requires the lowercase DOM attribute form as well
   video.setAttribute('playsinline', '');
   video.setAttribute('webkit-playsinline', '');
-  video.crossOrigin = 'anonymous';
+  // crossOrigin = 'anonymous' is intentionally NOT set here.
+  // Setting it on streams from CDNs that lack CORS headers causes an immediate
+  // MediaError on the video element ("Video failed to load").
+  // WebAudio (connectMediaToAudioContext) sets it lazily only when EQ is needed,
+  // and already has its own try/catch for the SecurityError.
   video.muted = isVideoMuted;
   video.style.cssText = 'width:100%;height:100%;object-fit:contain;background:#000;position:absolute;top:0;left:0;';
 
@@ -1271,7 +1293,13 @@ function createBaseVideoElement() {
   video.addEventListener('ended', () => {
     if (isHost) updateFirebaseState('paused', 0);
   });
-  video.addEventListener('error', () => showNotification('Video failed to load. Check the URL.', 'error'));
+  video.addEventListener('error', () => {
+    // Suppress when hls.js is active — it manages its own error reporting.
+    // This fires spuriously when hls.js tears down its MediaSource on a fatal error,
+    // which would otherwise show a second "failed to load" toast on top of the hls one.
+    if (hlsInstance) return;
+    showNotification('Video failed to load. Check the URL.', 'error');
+  });
   video.addEventListener('play', () => {
     lastKnownPlayingState = true;
     updateMediaSessionPlaybackState('playing');
