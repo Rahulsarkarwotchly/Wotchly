@@ -1580,38 +1580,60 @@ async function fetchMovieBoxFeed(category = 'trending', query = '') {
  *    caller knows the load failed rather than silently playing wrong content.
  *  - 200 but no stream_url              → surface a notification; return null.
  */
+// Client-side fallback streams — used when the Netlify function is unreachable
+// (e.g. Vite dev without Netlify CLI, network error, 404).
+const CLIENT_FALLBACK_STREAMS = [
+  'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+];
+function _clientFallback(id) {
+  let h = 0;
+  const s = String(id || '');
+  for (let i = 0; i < s.length; i++) h = (Math.imul(h, 31) + s.charCodeAt(i)) | 0;
+  return CLIENT_FALLBACK_STREAMS[Math.abs(h) % CLIENT_FALLBACK_STREAMS.length];
+}
+
 async function loadMovieBoxStream(movieId) {
   let resp;
   try {
     resp = await fetch(`/.netlify/functions/get-stream?id=${encodeURIComponent(movieId)}`);
   } catch {
-    showNotification('MovieBox: Unable to reach server. Check your connection.', 'error');
-    return null;
+    // Network-level failure (no connection, CORS block, etc.) — use client fallback.
+    showNotification('MovieBox: server unreachable — playing demo stream', 'info');
+    return _clientFallback(movieId);
   }
 
+  // 404 = function not deployed (local Vite dev without Netlify CLI) — use client fallback.
   if (resp.status === 404) {
-    showNotification('MovieBox: Stream function not found. Redeploy on Netlify.', 'error');
-    return null;
+    showNotification('MovieBox: playing demo stream (deploy on Netlify for live content)', 'info');
+    return _clientFallback(movieId);
   }
 
-  // 422 = unprocessable / content not streamable; 442 = upstream "unavailable"
+  // 422 / 442 are now handled server-side (function returns a fallback stream_url).
+  // This block is kept as a safety net in case an older deployment is still running.
   if (resp.status === 422 || resp.status === 442) {
-    const body = await resp.json().catch(() => ({}));
-    showNotification(body.error ?? 'This title cannot be streamed right now. Try a different title.', 'error');
-    return null;
+    showNotification('Live stream unavailable — playing demo stream', 'info');
+    return _clientFallback(movieId);
   }
 
   if (!resp.ok) {
-    const body = await resp.json().catch(() => ({}));
-    showNotification('MovieBox: ' + (body.error ?? `server error ${resp.status}`), 'error');
-    return null;
+    showNotification('MovieBox: server error — playing demo stream', 'info');
+    return _clientFallback(movieId);
   }
 
-  const data = await resp.json();
-  if (!data.stream_url) {
-    showNotification('MovieBox: no stream URL returned by server', 'error');
-    return null;
+  const data = await resp.json().catch(() => null);
+  if (!data || !data.stream_url) {
+    showNotification('MovieBox: no stream URL — playing demo stream', 'info');
+    return _clientFallback(movieId);
   }
+
+  // Server returned a fallback stream — surface a soft info toast (not an error).
+  if (data.fallback) {
+    showNotification('MovieBox: live server offline — playing demo stream', 'info');
+  }
+
   return data.stream_url;
 }
 
