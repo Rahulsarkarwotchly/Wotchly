@@ -1562,14 +1562,25 @@ async function fetchMovieBoxFeed(category = 'trending', query = '') {
   }
 
   // Normalise various response shapes: [...] / { results: [...] } / { data: [...] }
-  const raw = Array.isArray(json)            ? json
-            : Array.isArray(json.results)    ? json.results
-            : Array.isArray(json.data)       ? json.data
-            : Array.isArray(json.items)      ? json.items
+  const raw = Array.isArray(json)                   ? json
+            : Array.isArray(json.results)            ? json.results
+            : Array.isArray(json.data)               ? json.data
+            : Array.isArray(json.items)              ? json.items
+            : Array.isArray(json.list)               ? json.list
+            : Array.isArray(json.movies)             ? json.movies
+            : Array.isArray(json.shows)              ? json.shows
+            : Array.isArray(json.content)            ? json.content
+            : Array.isArray(json.response)           ? json.response
+            : Array.isArray(json.data?.results)      ? json.data.results
+            : Array.isArray(json.data?.list)         ? json.data.list
+            : Array.isArray(json.data?.items)        ? json.data.items
+            : Array.isArray(json.data?.movies)       ? json.data.movies
             : null;
   if (!raw) {
-    console.warn('[MovieBox] Unexpected response shape:', typeof json);
-    return { items: null, errorType: 'unknown', status: resp.status };
+    // Unknown shape but server returned 200 — log and treat as empty so
+    // the caller's retry/fallback logic can take over instead of hard-failing.
+    console.warn('[MovieBox] Unexpected response shape from server:', JSON.stringify(json).slice(0, 150));
+    return { items: [], errorType: 'unknown', status: resp.status };
   }
 
   const items = raw.map(item => ({

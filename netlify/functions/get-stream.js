@@ -76,7 +76,7 @@ export const handler = async (event) => {
         'Accept': 'application/json',
         'Accept-Language': 'en-US,en;q=0.9',
       },
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(20000),
     });
 
     // 422 = unprocessable / content not streamable

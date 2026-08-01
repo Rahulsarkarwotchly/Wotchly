@@ -129,8 +129,34 @@ export const handler = async (event) => {
 
     if (!resp.ok) throw new Error(`Upstream returned ${resp.status}`);
 
-    const data = await resp.json();
-    return { statusCode: 200, headers: corsHeaders, body: JSON.stringify(data) };
+    const json = await resp.json();
+
+    // Normalize various response shapes to a plain array.
+    // Render API may return [], {results:[]}, {data:[]}, {items:[]}, {list:[]},
+    // {movies:[]}, {shows:[]}, {content:[]}, or deeply-nested variants.
+    const raw = Array.isArray(json)                   ? json
+              : Array.isArray(json.results)            ? json.results
+              : Array.isArray(json.data)               ? json.data
+              : Array.isArray(json.items)              ? json.items
+              : Array.isArray(json.list)               ? json.list
+              : Array.isArray(json.movies)             ? json.movies
+              : Array.isArray(json.shows)              ? json.shows
+              : Array.isArray(json.content)            ? json.content
+              : Array.isArray(json.data?.results)      ? json.data.results
+              : Array.isArray(json.data?.list)         ? json.data.list
+              : Array.isArray(json.data?.items)        ? json.data.items
+              : Array.isArray(json.response)           ? json.response
+              : Array.isArray(json.data?.movies)       ? json.data.movies
+              : null;
+
+    if (!raw || raw.length === 0) {
+      // Unrecognized shape or empty array — serve mock so UI never shows error.
+      console.warn('[get-feed] Unrecognized/empty response shape from Render:', JSON.stringify(json).slice(0, 200));
+      const fallback = q ? [] : getMockItems(category);
+      return { statusCode: 200, headers: corsHeaders, body: JSON.stringify(fallback) };
+    }
+
+    return { statusCode: 200, headers: corsHeaders, body: JSON.stringify(raw) };
 
   } catch (err) {
     console.error('[get-feed] Error:', err.message, '| URL:', apiUrl);
