@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a12">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Wotchly — Room</title>
+  <style>
+:root{--bg:#08080e;--text:#f0f0f8;--font:'Inter',system-ui,-apple-system,sans-serif}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{height:100%;height:100dvh;font-size:16px;background:var(--bg)}
+body{font-family:var(--font);background:var(--bg);color:var(--text);height:100%;height:100dvh;overflow:hidden;-webkit-font-smoothing:antialiased}
+html.home-page,html.legal-page{overflow-y:auto;height:auto;min-height:100dvh}
+html.home-page body,html.legal-page body{overflow-y:auto;height:auto;min-height:100dvh}
+</style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap">
+  <link rel="preload" as="style" href="/style.css">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="icon" type="image/svg+xml" href="/logo.svg">
+  <link rel="apple-touch-icon" href="/logo.svg">
+</head>
+<body>
+
+<!-- ===================== USERNAME GATE ===================== -->
+<div class="username-gate" id="usernameGate" style="display:none;">
+
+  <!-- Ambient orbs -->
+  <div class="gate-orb gate-orb-1"></div>
+  <div class="gate-orb gate-orb-2"></div>
+  <div class="gate-orb gate-orb-3"></div>
+
+  <!-- Card -->
+  <div class="username-gate-card" id="gateCard">
+
+    <!-- Top bar -->
+    <div class="gate-topbar">
+      <a href="index.html" class="logo gate-logo">Wotchly<span>.</span></a>
+      <button class="gate-theme-toggle theme-toggle" id="themeToggleGate" title="Toggle theme" aria-label="Toggle theme">
+        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M12 7a5 5 0 1 0 0 10A5 5 0 0 0 12 7zm0-5a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0V3a1 1 0 0 1 1-1zm0 16a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0v-2a1 1 0 0 1 1-1zM4.22 5.64a1 1 0 0 1 1.42-1.42l1.41 1.42a1 1 0 1 1-1.41 1.41L4.22 5.64zm12.72 12.72a1 1 0 0 1 1.42-1.42l1.41 1.42a1 1 0 0 1-1.41 1.41l-1.42-1.41zM3 12a1 1 0 0 1 1-1h2a1 1 0 0 1 0 2H4a1 1 0 0 1-1-1zm16 0a1 1 0 0 1 1-1h2a1 1 0 0 1 0 2h-2a1 1 0 0 1-1-1zM5.64 18.36a1 1 0 0 1-1.42-1.42l1.42-1.41a1 1 0 0 1 1.41 1.41L5.64 18.36zm12.72-12.72a1 1 0 0 1-1.42-1.42L18.36 2.8a1 1 0 0 1 1.41 1.41l-1.41 1.43z"/></svg>
+        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.39 5.39 0 0 1-4.4 2.26 5.4 5.4 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
+      </button>
+    </div>
+
+    <!-- Hero icon -->
+    <div class="gate-hero-icon">
+      <div class="gate-icon-ring gate-icon-ring-outer"></div>
+      <div class="gate-icon-ring gate-icon-ring-inner"></div>
+      <div class="gate-icon-core">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+    </div>
+
+    <!-- Badge -->
+    <div class="gate-badge">
+      <span class="gate-badge-dot"></span>
+      <span>Private Room Invite</span>
+    </div>
+
+    <!-- Heading -->
+    <h2 class="gate-title">Join the Room</h2>
+    <p class="gate-subtitle">You've been invited. Pick a name and step inside.</p>
+
+    <!-- Room code chip -->
+    <div class="gate-room-code" id="gateRoomCode">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <span id="gateRoomCodeText">------</span>
+    </div>
+
+    <!-- Form -->
+    <div class="gate-form">
+
+      <!-- Name input -->
+      <div class="gate-input-wrap">
+        <div class="gate-input-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </div>
+        <input
+          type="text"
+          id="gateUsername"
+          class="gate-input"
+          placeholder="Your display name…"
+          maxlength="20"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+          autofocus
+        >
+        <span class="gate-char-count" id="gateCharCount">20</span>
+      </div>
+
+      <!-- Avatar colour picker -->
+      <div class="gate-color-row" id="gateColorRow">
+        <span class="gate-color-label">Avatar colour</span>
+        <div class="gate-swatches" id="gateSwatches"></div>
+      </div>
+
+      <!-- CTA -->
+      <button class="gate-btn" id="gateJoinBtn">
+        <span class="gate-btn-text">Enter Room</span>
+        <span class="gate-btn-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </span>
+        <span class="gate-btn-shine"></span>
+      </button>
+
+    </div><!-- /gate-form -->
+
+    <!-- Footer note -->
+    <p class="gate-footer-note">No sign-up · No password · 100% free</p>
+
+  </div><!-- /card -->
+</div>
+
+<!-- ===================== MAIN ROOM UI ===================== -->
+<div class="room-wrapper" id="roomWrapper" style="display:none;">
+
+  <!-- Header -->
+  <header class="room-header">
+    <div class="room-header-left">
+      <a href="index.html" class="logo room-logo">Wotchly<span>.</span></a>
+      <button class="theme-toggle" id="themeToggle" title="Toggle theme" aria-label="Toggle theme" aria-pressed="false">
+        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7a5 5 0 1 0 0 10A5 5 0 0 0 12 7zm0-5a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0V3a1 1 0 0 1 1-1zm0 16a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0v-2a1 1 0 0 1 1-1zM4.22 5.64a1 1 0 0 1 1.42-1.42l1.41 1.42a1 1 0 1 1-1.41 1.41L4.22 5.64zm12.72 12.72a1 1 0 0 1 1.42-1.42l1.41 1.42a1 1 0 0 1-1.41 1.41l-1.42-1.41zM3 12a1 1 0 0 1 1-1h2a1 1 0 0 1 0 2H4a1 1 0 0 1-1-1zm16 0a1 1 0 0 1 1-1h2a1 1 0 0 1 0 2h-2a1 1 0 0 1-1-1zM5.64 18.36a1 1 0 0 1-1.42-1.42l1.42-1.41a1 1 0 0 1 1.41 1.41L5.64 18.36zm12.72-12.72a1 1 0 0 1-1.42-1.42L18.36 2.8a1 1 0 0 1 1.41 1.41l-1.41 1.43z"/></svg>
+        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.39 5.39 0 0 1-4.4 2.26 5.4 5.4 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
+      </button>
+    </div>
+
+    <div class="room-header-center">
+      <button class="room-code-chip" id="copyCodeBtn" title="Copy room code">
+        <span class="room-code-text" id="roomCodeDisplay">------</span>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      </button>
+      <button class="header-btn" id="shareBtn" title="Share room link">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      </button>
+      <!-- Media button: host-only, hidden for guests via JS -->
+      <button class="media-btn host-only-el" id="videoUrlBtn">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
+        Media
+      </button>
+      <div class="mode-indicator" id="modeIndicator">
+        <span id="modeIcon"></span>
+        <span id="modeText"></span>
+      </div>
+    </div>
+
+    <div class="room-header-right">
+      <div class="host-badge" id="hostBadge" style="display:none;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5z"/></svg>
+        Host
+      </div>
+      <button class="header-btn" id="settingsBtn" title="Settings">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <button class="header-btn" id="leaveBtn" title="Leave room">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="room-main">
+
+    <!-- Video Section -->
+    <section class="video-section">
+
+      <!-- Sync status badge (viewers only) -->
+      <div id="syncBadge" class="sync-badge" style="display:none;">
+        <span class="sync-dot"></span>
+        <span id="syncBadgeText">Synced</span>
+      </div>
+
+      <!-- Viewer sync overlay: appears when host plays an iframe/embed video requiring user gesture -->
+      <div id="syncOverlay" class="sync-overlay" style="display:none;">
+        <div class="sync-overlay-card">
+          <div class="sync-overlay-ring">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="36" height="36"><polygon points="6,3 20,12 6,21"/></svg>
+          </div>
+          <p class="sync-overlay-title">Host is playing</p>
+          <p class="sync-overlay-sub">Tap below to start in sync with everyone</p>
+          <button id="syncTapBtn" class="sync-tap-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><polygon points="5,3 19,12 5,21"/></svg>
+            Play in Sync
+          </button>
+        </div>
+      </div>
+
+      <div class="video-container" id="videoContainer">
+        <div class="video-placeholder" id="videoPlaceholder">
+          <div class="placeholder-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="3"/><polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/></svg>
+          </div>
+          <h3>No media loaded</h3>
+          <p id="placeholderSubtext">Tap <strong>Media</strong> to load a video, audio, or website URL</p>
+          <!-- Host only: Load Media button -->
+          <button class="btn btn-secondary placeholder-btn host-only-el" id="placeholderMediaBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
+            Load Media
+          </button>
+        </div>
+      </div>
+
+
+      <!-- Video Controls -->
+      <div class="video-controls" id="videoControls">
+
+        <!-- Landscape button: FIRST for visibility in landscape mode — visible to ALL users (mobile) -->
+        <button class="ctrl-btn landscape-btn" id="landscapeBtn" title="Landscape Mode">
+          <svg class="icon-landscape" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="5" width="20" height="14" rx="2"/>
+            <polyline points="9 9 5 12 9 15"/>
+            <polyline points="15 9 19 12 15 15"/>
+          </svg>
+          <svg class="icon-portrait" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+            <rect x="5" y="2" width="14" height="20" rx="2"/>
+            <polyline points="9 8 12 4 15 8"/>
+            <polyline points="9 16 12 20 15 16"/>
+          </svg>
+        </button>
+
+        <!-- Host-only controls -->
+        <button class="ctrl-btn host-only-el" id="seekBackBtn" title="Seek -10s">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
+        </button>
+        <button class="ctrl-btn host-only-el" id="playBtn" title="Play">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button class="ctrl-btn host-only-el" id="pauseBtn" title="Pause">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        </button>
+        <button class="ctrl-btn host-only-el" id="seekFwdBtn" title="Seek +10s">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
+        </button>
+        <!-- Seek row: full-width second line -->
+        <div class="seek-row">
+          <input type="range" class="seek-slider host-only-el" id="seekSlider" min="0" max="100" value="0" aria-label="Seek">
+          <span class="time-display" id="timeDisplay">0:00</span>
+        </div>
+
+        <!-- Mute button: visible to ALL users -->
+        <button class="ctrl-btn mute-btn" id="muteBtn" title="Mute / Unmute">
+          <!-- Unmuted icon (default) -->
+          <svg class="icon-unmuted" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+          </svg>
+          <!-- Muted icon (hidden by default) -->
+          <svg class="icon-muted" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="display:none;">
+            <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+          </svg>
+        </button>
+
+        <!-- Language / Audio Track Selector: visible to ALL users, shown only when tracks detected -->
+        <div class="lang-selector" id="langSelector" style="display:none;">
+          <button class="lang-btn" id="langBtn" title="Audio Language &amp; Subtitles">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+            <span class="lang-btn-label" id="langBtnLabel">Audio</span>
+          </button>
+          <div class="lang-panel" id="langPanel">
+            <div class="lang-panel-header">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <span>Audio &amp; Subtitles</span>
+            </div>
+            <div id="langAudioSection">
+              <div class="lang-section-title">Audio Track</div>
+              <div class="lang-options" id="langAudioOptions"></div>
+            </div>
+            <div id="langSubSection" style="display:none;">
+              <div class="lang-divider"></div>
+              <div class="lang-section-title">Subtitles</div>
+              <div class="lang-options" id="langSubOptions"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="quality-selector host-only-el" id="qualitySelector">
+          <button class="quality-btn" id="qualityBtn" title="Video Quality">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="12" height="12"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-8 12H9.5v-2h-2v2H6V9h1.5v2.5h2V9H11v6zm2-6h4c.55 0 1 .45 1 1v4c0 .55-.45 1-1 1h-4V9zm1.5 4.5h2v-3h-2v3z"/></svg>
+            <span id="currentQuality">Auto</span>
+          </button>
+          <div class="quality-dropdown" id="qualityDropdown">
+            <div class="quality-option" data-quality="auto">Auto</div>
+            <div class="quality-option" data-quality="1080">1080p HD</div>
+            <div class="quality-option" data-quality="720">720p HD</div>
+            <div class="quality-option" data-quality="480">480p</div>
+            <div class="quality-option" data-quality="360">360p</div>
+            <div class="quality-option" data-quality="240">240p</div>
+          </div>
+        </div>
+
+
+      </div>
+    </section>
+
+    <!-- Bottom: Tabs + Users + Chat -->
+    <section class="bottom-section">
+      <!-- Mobile tabs -->
+      <div class="bottom-tabs">
+        <button class="bottom-tab active" data-panel="viewers">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          Viewers <span id="viewerTabCount"></span>
+        </button>
+        <button class="bottom-tab" data-panel="chat">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Chat <span class="tab-badge" id="unreadBadge" style="display:none;">0</span>
+        </button>
+      </div>
+
+      <div class="panels-container">
+        <!-- Users Panel -->
+        <div class="panel panel-users active" id="panelViewers">
+          <div class="panel-header">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span>Viewers (<span id="userCount">0</span>)</span>
+          </div>
+          <ul class="user-list" id="userList"></ul>
+        </div>
+
+        <!-- Chat Panel -->
+        <div class="panel panel-chat" id="panelChat">
+          <div class="panel-header">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span>Chat</span>
+          </div>
+          <div class="chat-messages" id="chatMessages"></div>
+          <div class="chat-input-bar">
+            <input type="text" id="chatInput" class="input-field" placeholder="Send a message…" maxlength="500" autocomplete="off" autocorrect="off">
+            <button class="chat-action-btn voice-action-btn" id="voiceBtn" title="Voice note">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+            </button>
+            <button class="chat-action-btn send-action-btn" id="sendChatBtn" title="Send">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ===================== MODALS ===================== -->
+
+<!-- Media URL Modal -->
+<div class="modal-overlay" id="videoModal">
+  <div class="modal media-modal">
+    <div class="modal-header">
+      <span class="modal-title">Load Media</span>
+      <button class="modal-close" id="closeVideoModal">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="padding:0;display:flex;flex-direction:column;overflow:hidden;">
+
+      <!-- ── Media Modal Tabs ──────────────────────────────── -->
+      <div class="media-modal-tabs">
+        <button class="media-modal-tab active" data-media-tab="directUrl">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          Direct URL
+        </button>
+        <button class="media-modal-tab" data-media-tab="moviebox">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V4h-4z"/></svg>
+          MovieBox
+          <span class="mb-tab-badge">New</span>
+        </button>
+      </div>
+
+      <!-- ── Panel 1: Direct URL ───────────────────────────── -->
+      <div class="media-tab-panel" id="mediaPanelDirectUrl" style="display:block;padding:1rem 1.25rem;overflow-y:auto;flex:1;">
+      <div class="media-url-input-wrap">
+        <input type="text" id="videoUrlInput" class="input-field" placeholder="Paste video, audio, or website URL…" autocomplete="off" autocorrect="off" spellcheck="false" inputmode="url">
+        <button class="btn btn-primary load-btn" id="loadVideoBtn">Load</button>
+      </div>
+      <div class="media-hint">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Supports YouTube, MP4, HLS (m3u8), Google Drive, Vimeo, Dailymotion, direct audio, Spotify, SoundCloud and more
+      </div>
+      <!-- ── Stream Embed Engine ──────────────────────────── -->
+      <div id="streamEmbedSection">
+        <p class="ott-section-title">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="13" height="13" style="display:inline;vertical-align:middle;margin-right:5px;color:#C7B8FF"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
+          Stream Embed
+        </p>
+
+        <div class="se-tabs">
+          <button class="se-tab active" data-se-tab="seImdbPanel">Netflix · Prime · Hotstar</button>
+          <button class="se-tab" data-se-tab="seAnimePanel">Anime / Crunchyroll</button>
+        </div>
+
+        <!-- IMDb / TMDB → embed -->
+        <div class="se-panel" id="seImdbPanel">
+          <div id="seOttWarning" class="se-ott-warning" style="display:none"></div>
+          <div class="se-input-row">
+            <input type="text" id="seOttInput" class="input-field" placeholder="tt0944947 or Netflix URL…" autocomplete="off" autocorrect="off" spellcheck="false">
+            <select id="seContentType" class="se-select">
+              <option value="movie">Movie</option>
+              <option value="tv">TV Show</option>
+            </select>
+          </div>
+          <div class="se-tv-row" id="seTvRow">
+            <input type="number" id="seSeason"  class="input-field se-ep" placeholder="Season" min="1" value="1">
+            <input type="number" id="seEpisode" class="input-field se-ep" placeholder="Ep"     min="1" value="1">
+          </div>
+          <button class="btn btn-primary se-load-btn" id="seLoadOttBtn">Load Embed</button>
+        </div>
+
+        <!-- Anime search → embed -->
+        <div class="se-panel" id="seAnimePanel" style="display:none">
+          <div class="se-input-row">
+            <input type="text" id="seAnimeQuery" class="input-field" placeholder="e.g. Attack on Titan…" autocomplete="off">
+            <button class="btn btn-secondary se-search-btn" id="seAnimeSearchBtn">Search</button>
+          </div>
+          <div id="seAnimeResults" class="se-anime-results"></div>
+          <div id="seAnimeEpSection" class="se-anime-ep-section" style="display:none">
+            <div class="se-ep-header">
+              <button class="se-back-btn" id="seAnimeBackBtn">← Back</button>
+              <span class="se-ep-title" id="seAnimeEpTitle"></span>
+            </div>
+            <div class="se-ep-grid" id="seAnimeEpGrid"></div>
+          </div>
+        </div>
+      </div>
+      <!-- ────────────────────────────────────────────────── -->
+      </div><!-- /mediaPanelDirectUrl -->
+
+      <!-- ── Panel 2: MovieBox Discovery ─────────────────────── -->
+      <div class="media-tab-panel" id="mediaPanelMoviebox" style="display:none;overflow-y:auto;flex:1;">
+        <div class="mb-panel">
+
+          <!-- Search -->
+          <div class="mb-search-wrap">
+            <svg class="mb-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="mbSearch" class="mb-search-input" placeholder="Search movies, shows, anime…" autocomplete="off" spellcheck="false">
+            <button class="mb-search-btn" id="mbSearchBtn">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Search
+            </button>
+          </div>
+
+          <!-- Filter Pills -->
+          <div class="mb-pills-row">
+            <button class="mb-pill active" data-pill="trending">Trending</button>
+            <button class="mb-pill" data-pill="movie">Movie</button>
+            <button class="mb-pill" data-pill="tv">TV</button>
+            <button class="mb-pill" data-pill="anime">Anime</button>
+            <button class="mb-pill" data-pill="midnight">Midnight</button>
+            <button class="mb-pill" data-pill="short drama">Short Drama</button>
+            <button class="mb-pill" data-pill="serials">Serials</button>
+          </div>
+
+          <!-- Home sections + hero (all hidden during search) -->
+          <div id="mbHomeSections">
+
+          <!-- Hero Banner -->
+          <div class="mb-hero" id="mbHero" data-movie-id="" data-title="">
+            <div class="mb-hero-bg" id="mbHeroBg" style="background:linear-gradient(135deg,#0d0d18 0%,#12122a 55%,#1a1a3e 100%)"></div>
+            <div class="mb-hero-shimmer"></div>
+            <div class="mb-hero-content" id="mbHeroContent" style="opacity:0">
+              <span class="mb-hero-eyebrow"><span class="mb-live-dot"></span> Trending Now</span>
+              <h3 class="mb-hero-title" id="mbHeroTitle"></h3>
+              <p class="mb-hero-meta" id="mbHeroMeta"></p>
+              <div class="mb-hero-actions">
+                <div class="mb-hero-play-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="6,3 20,12 6,21"/></svg>
+                </div>
+                <span class="mb-hero-cta">Play in Room</span>
+              </div>
+            </div>
+            <!-- Skeleton -->
+            <div class="mb-hero-sk" id="mbHeroSk">
+              <div class="mb-sk-block" style="width:62%;height:1rem;border-radius:6px;margin-bottom:.5rem"></div>
+              <div class="mb-sk-block" style="width:38%;height:.65rem;border-radius:4px;margin-bottom:.9rem"></div>
+            </div>
+          </div>
+
+            <!-- Featured row below hero -->
+            <div class="mb-scroll-row mb-featured-row" id="mbFeaturedRow">
+              <div class="mb-card-sm mb-sk-card"><div class="mb-poster-sm mb-sk-poster"></div><div class="mb-sk-line-sm"></div></div>
+              <div class="mb-card-sm mb-sk-card"><div class="mb-poster-sm mb-sk-poster"></div><div class="mb-sk-line-sm"></div></div>
+              <div class="mb-card-sm mb-sk-card"><div class="mb-poster-sm mb-sk-poster"></div><div class="mb-sk-line-sm"></div></div>
+              <div class="mb-card-sm mb-sk-card"><div class="mb-poster-sm mb-sk-poster"></div><div class="mb-sk-line-sm"></div></div>
+            </div>
+
+            <!-- Categories -->
+            <div class="mb-section">
+              <div class="mb-section-head">
+                <span class="mb-section-title">Categories</span>
+              </div>
+              <div class="mb-cats-scroll">
+                <button class="mb-cat-chip active" data-filter="all">
+                  <span class="mb-cat-chip-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                  </span>
+                  All
+                </button>
+                <button class="mb-cat-chip" data-filter="bollywood" style="--chip-bg:linear-gradient(135deg,#6d1b7b 0%,#c2185b 100%)">Bollywood</button>
+                <button class="mb-cat-chip" data-filter="hollywood" style="--chip-bg:linear-gradient(135deg,#1565c0 0%,#283593 100%)">Hollywood</button>
+                <button class="mb-cat-chip" data-filter="korean" style="--chip-bg:linear-gradient(135deg,#006064 0%,#004d40 100%)">Korean</button>
+                <button class="mb-cat-chip" data-filter="anime" style="--chip-bg:linear-gradient(135deg,#bf360c 0%,#6a0000 100%)">Anime</button>
+                <button class="mb-cat-chip" data-filter="south" style="--chip-bg:linear-gradient(135deg,#1b5e20 0%,#0d3b10 100%)">South</button>
+              </div>
+            </div>
+
+            <!-- Rankings -->
+            <div class="mb-section">
+              <div class="mb-section-head">
+                <span class="mb-section-title">Rankings</span>
+                <button class="mb-section-more">All <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><polyline points="9 18 15 12 9 6"/></svg></button>
+              </div>
+              <div class="mb-rank-subpills" id="mbRankSubPills">
+                <button class="mb-rank-subpill active" data-rank-cat="all">Trending now</button>
+                <button class="mb-rank-subpill" data-rank-cat="cinema">Cinema</button>
+                <button class="mb-rank-subpill" data-rank-cat="bollywood">Bollywood</button>
+                <button class="mb-rank-subpill" data-rank-cat="south">South Indian</button>
+                <button class="mb-rank-subpill" data-rank-cat="hollywood">Hollywood</button>
+              </div>
+              <div class="mb-scroll-row" id="mbRankingsRow">
+                <div class="mb-card-sm mb-sk-card"><div class="mb-poster-sm mb-sk-poster"></div><div class="mb-sk-line-sm"></div></div>
+                <div class="mb-card-sm mb-sk-card"><div class="mb-poster-sm mb-sk-poster"></div><div class="mb-sk-line-sm"></div></div>
+                <div class="mb-card-sm mb-sk-card"><div class="mb-poster-sm mb-sk-poster"></div><div class="mb-sk-line-sm"></div></div>
+                <div class="mb-card-sm mb-sk-card"><div class="mb-poster-sm mb-sk-poster"></div><div class="mb-sk-line-sm"></div></div>
+              </div>
+            </div>
+
+            <!-- Cinema section -->
+            <div class="mb-section" id="mbCinemaSection">
+              <div class="mb-section-head">
+                <div class="mb-section-title-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14" style="color:#ff6b35"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 12.5v-9l6 4.5-6 4.5z"/></svg>
+                  <span class="mb-section-title">Cinema</span>
+                </div>
+                <button class="mb-section-more">All <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><polyline points="9 18 15 12 9 6"/></svg></button>
+              </div>
+              <div class="mb-scroll-row" id="mbCinemaRow">
+                <div class="mb-card-sm mb-sk-card"><div class="mb-poster-sm mb-sk-poster"></div><div class="mb-sk-line-sm"></div></div>
+                <div class="mb-card-sm mb-sk-card"><div class="mb-poster-sm mb-sk-poster"></div><div class="mb-sk-line-sm"></div></div>
+                <div class="mb-card-sm mb-sk-card"><div class="mb-poster-sm mb-sk-poster"></div><div class="mb-sk-line-sm"></div></div>
+              </div>
+            </div>
+
+          </div><!-- /mbHomeSections -->
+
+          <!-- Search results (shown while searching) -->
+          <div id="mbSearchResults" style="display:none">
+            <div class="mb-results-grid" id="mbResultsGrid">
+              <p style="color:var(--text-muted,#888);padding:1rem;grid-column:1/-1;text-align:center;opacity:.6">Type to search…</p>
+            </div>
+          </div>
+
+          <!-- Guest notice -->
+          <p class="mb-guest-notice" id="mbGuestNotice" style="display:none;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Only the room host can select a title to play.
+          </p>
+
+        </div><!-- /mb-panel -->
+      </div><!-- /mediaPanelMoviebox -->
+
+    </div><!-- /modal-body -->
+  </div><!-- /modal -->
+</div><!-- /modal-overlay -->
+
+<!-- Voice Note Modal -->
+<div class="modal-overlay" id="voiceModal">
+  <div class="modal voice-modal" style="max-width:340px;">
+    <div class="modal-header">
+      <span class="modal-title">Voice Note</span>
+      <button class="modal-close" id="closeVoiceModal">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="voice-modal-content">
+        <button class="record-btn" id="recordBtn" title="Hold to record">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+          Record
+        </button>
+        <button class="upload-btn" id="uploadAudioBtn" title="Upload audio file">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Upload
+        </button>
+      </div>
+      <p class="recording-status" id="recordingStatus"></p>
+      <input type="file" id="audioFileInput" accept="audio/*" style="display:none">
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal settings-modal">
+    <div class="modal-header">
+      <span class="modal-title">Settings</span>
+      <button class="modal-close" id="closeSettingsModal">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="settings-tabs">
+      <button class="settings-tab active" data-tab="general">General</button>
+      <button class="settings-tab" data-tab="audio">Audio</button>
+      <button class="settings-tab" data-tab="host">Host</button>
+    </div>
+    <div class="modal-body" style="padding:0;overflow-y:auto;flex:1;">
+      <!-- General Panel -->
+      <div class="settings-panel active" id="generalPanel">
+        <div class="settings-group">
+          <label class="settings-label">Display Name</label>
+          <div class="settings-input-row">
+            <input type="text" id="displayNameInput" class="input-field" placeholder="New display name" maxlength="20">
+            <button class="btn btn-secondary btn-sm" id="changeNameBtn">Update</button>
+          </div>
+        </div>
+        <div class="settings-actions">
+          <button class="settings-action-btn" id="muteNotifBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span id="muteNotifText">Mute Notifications</span>
+          </button>
+          <button class="settings-action-btn leave-btn" id="leaveRoomBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Leave Room
+          </button>
+        </div>
+      </div>
+
+      <!-- Audio Panel -->
+      <div class="settings-panel" id="audioPanel">
+        <div class="settings-group">
+          <label class="settings-label">Master Volume</label>
+          <div class="slider-row">
+            <input type="range" id="volumeSlider" min="0" max="100" value="100" class="audio-slider">
+            <span class="slider-value" id="volumeValue">100%</span>
+          </div>
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">Equalizer Preset</label>
+          <select id="equalizerPreset" class="settings-select">
+            <option value="normal">Normal</option>
+            <option value="bass_boost">Bass Boost</option>
+            <option value="treble_boost">Treble Boost</option>
+            <option value="vocal">Vocal</option>
+            <option value="rock">Rock</option>
+            <option value="jazz">Jazz</option>
+            <option value="classical">Classical</option>
+            <option value="electronic">Electronic</option>
+          </select>
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">Bass</label>
+          <div class="slider-row">
+            <input type="range" id="bassSlider" min="0" max="100" value="50" class="audio-slider">
+            <span class="slider-value" id="bassValue">50%</span>
+          </div>
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">Treble</label>
+          <div class="slider-row">
+            <input type="range" id="trebleSlider" min="0" max="100" value="50" class="audio-slider">
+            <span class="slider-value" id="trebleValue">50%</span>
+          </div>
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">Balance</label>
+          <div class="slider-row">
+            <input type="range" id="balanceSlider" min="0" max="100" value="50" class="audio-slider">
+            <span class="slider-value" id="balanceValue">C</span>
+          </div>
+        </div>
+        <div class="equalizer-visual">
+          <div class="eq-bar" style="--height:60%"></div>
+          <div class="eq-bar" style="--height:80%"></div>
+          <div class="eq-bar" style="--height:50%"></div>
+          <div class="eq-bar" style="--height:70%"></div>
+          <div class="eq-bar" style="--height:90%"></div>
+          <div class="eq-bar" style="--height:65%"></div>
+          <div class="eq-bar" style="--height:75%"></div>
+          <div class="eq-bar" style="--height:55%"></div>
+        </div>
+      </div>
+
+      <!-- Host Panel -->
+      <div class="settings-panel" id="hostPanel">
+        <div id="hostSettings" style="display:none;">
+          <p class="settings-label">Host Controls</p>
+          <div class="settings-actions" style="margin-top:.5rem;">
+            <button class="settings-action-btn" id="lockRoomBtn">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span id="lockBtnText">Lock Room</span>
+            </button>
+            <button class="settings-action-btn" id="clearChatBtn">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Clear Chat
+            </button>
+            <button class="settings-action-btn close-room-btn" id="closeRoomBtn">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              Close Room (Delete)
+            </button>
+          </div>
+          <p class="host-section-title" style="margin-top:1.25rem;">Manage Users</p>
+          <div class="kick-user-list" id="kickUserList"></div>
+        </div>
+        <div id="nonHostMessage" class="non-host-message">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="36" height="36"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <p>Host controls are only available to the room host.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="notification" class="notification" aria-live="polite"></div>
+
+<script>
+// Settings tab switching
+document.querySelectorAll('.settings-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    const panelId = tab.dataset.tab + 'Panel';
+    const panel = document.getElementById(panelId);
+    if (panel) panel.classList.add('active');
+  });
+});
+
+// Bottom tab switching (mobile)
+document.querySelectorAll('.bottom-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.bottom-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const target = tab.dataset.panel;
+    document.getElementById('panelViewers').classList.toggle('active', target === 'viewers');
+    document.getElementById('panelChat').classList.toggle('active', target === 'chat');
+    if (target === 'chat') {
+      const badge = document.getElementById('unreadBadge');
+      if (badge) { badge.style.display = 'none'; badge.textContent = '0'; }
+      window._unreadCount = 0;
+    }
+  });
+});
+
+// OTT shortcuts
+document.querySelectorAll('.ott-btn[data-url]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.getElementById('videoUrlInput').value = btn.dataset.url;
+    document.getElementById('loadVideoBtn').click();
+  });
+});
+
+// Gate char count
+const gateInput = document.getElementById('gateUsername');
+const gateCount = document.getElementById('gateCharCount');
+if (gateInput && gateCount) {
+  gateInput.addEventListener('input', () => { gateCount.textContent = 20 - gateInput.value.length; });
+}
+</script>
+<script type="module" src="./script.js"></script>
+</body>
+</html>

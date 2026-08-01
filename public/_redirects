@@ -1,0 +1,3 @@
+/icons/*     /icons/:splat     200
+/screenshots/*  /screenshots/:splat  200
+/*  /index.html  200

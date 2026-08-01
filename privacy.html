@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en" class="legal-page">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a0a12">
+  <title>Privacy Policy — Wotchly</title>
+  <style>
+:root{--bg:#08080e;--text:#f0f0f8;--font:'Inter',system-ui,-apple-system,sans-serif}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{height:100%;height:100dvh;font-size:16px;background:var(--bg)}
+body{font-family:var(--font);background:var(--bg);color:var(--text);height:100%;height:100dvh;overflow:hidden;-webkit-font-smoothing:antialiased}
+html.home-page,html.legal-page{overflow-y:auto;height:auto;min-height:100dvh}
+html.home-page body,html.legal-page body{overflow-y:auto;height:auto;min-height:100dvh}
+</style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap">
+  <link rel="preload" as="style" href="/style.css">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="icon" type="image/svg+xml" href="/logo.svg">
+  <link rel="apple-touch-icon" href="/logo.svg">
+</head>
+<body>
+<header class="legal-header">
+  <a href="index.html" class="logo">Wotchly<span>.</span></a>
+  <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" aria-pressed="false">
+    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7a5 5 0 1 0 0 10A5 5 0 0 0 12 7zm0-5a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0V3a1 1 0 0 1 1-1zm0 16a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0v-2a1 1 0 0 1 1-1zM4.22 5.64a1 1 0 0 1 1.42-1.42l1.41 1.42a1 1 0 1 1-1.41 1.41L4.22 5.64zm12.72 12.72a1 1 0 0 1 1.42-1.42l1.41 1.42a1 1 0 0 1-1.41 1.41l-1.42-1.41zM3 12a1 1 0 0 1 1-1h2a1 1 0 0 1 0 2H4a1 1 0 0 1-1-1zm16 0a1 1 0 0 1 1-1h2a1 1 0 0 1 0 2h-2a1 1 0 0 1-1-1zM5.64 18.36a1 1 0 0 1-1.42-1.42l1.42-1.41a1 1 0 0 1 1.41 1.41L5.64 18.36zm12.72-12.72a1 1 0 0 1-1.42-1.42L18.36 2.8a1 1 0 0 1 1.41 1.41l-1.41 1.43z"/></svg>
+    <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.39 5.39 0 0 1-4.4 2.26 5.4 5.4 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
+  </button>
+</header>
+
+<main class="legal-wrapper">
+  <div class="legal-hero">
+    <div class="legal-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <h1>Privacy Policy</h1>
+    <p class="legal-date">Effective Date: January 1, 2025 · Last Updated: July 2025</p>
+  </div>
+
+  <div class="legal-card card">
+    <div class="legal-notice">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <div>
+        <strong>Your privacy matters to us.</strong> Wotchly collects the bare minimum to make the service work. We do not sell, trade, or monetize your personal data. Ever.
+      </div>
+    </div>
+
+    <section class="legal-section">
+      <h2>1. Who We Are</h2>
+      <p>Wotchly is operated by Adrashtra, a technology company dedicated to building meaningful connected experiences. This Privacy Policy explains how we collect, use, store, and protect your information when you use Wotchly. It applies to all users across all platforms and devices where Wotchly is accessible.</p>
+    </section>
+
+    <section class="legal-section">
+      <h2>2. What Information We Collect</h2>
+      <p>We believe in radical minimalism when it comes to data collection. Here is exactly what we collect and why:</p>
+      <h3>2a. Information You Provide</h3>
+      <ul>
+        <li><strong>Display Name</strong> — the name you choose when joining a room. Stored only in your browser's localStorage. Never transmitted to our servers except as part of in-room presence (visible only to users in the same room).</li>
+        <li><strong>Chat Messages &amp; Voice Notes</strong> — text and audio messages you send in a room. Stored temporarily in Firebase Realtime Database only for as long as the room session is active.</li>
+      </ul>
+      <h3>2b. Information Collected Automatically</h3>
+      <ul>
+        <li><strong>Room Activity Data</strong> — playback state (playing/paused/seeking), current video URL, and user presence indicators. Stored in Firebase and automatically deleted when all users leave a room.</li>
+        <li><strong>Theme Preference</strong> — dark/light mode preference. Stored locally in your browser only, never on our servers.</li>
+        <li><strong>Anonymous Usage Analytics</strong> — aggregate, anonymized data about how features are used (e.g., how many rooms are created per day). No personally identifiable information is included.</li>
+      </ul>
+    </section>
+
+    <section class="legal-section">
+      <h2>3. What We Do NOT Collect</h2>
+      <p>We are committed to being explicit about what we don't do:</p>
+      <ul>
+        <li>We do <strong>not</strong> require email addresses, phone numbers, or any account registration</li>
+        <li>We do <strong>not</strong> collect payment or billing information of any kind</li>
+        <li>We do <strong>not</strong> track your browsing activity outside of Wotchly</li>
+        <li>We do <strong>not</strong> sell, rent, or share your personal data with third-party advertisers</li>
+        <li>We do <strong>not</strong> build advertising profiles or behavioral fingerprints</li>
+        <li>We do <strong>not</strong> collect IP addresses for identification purposes</li>
+        <li>We do <strong>not</strong> store chat messages or voice notes after a room session ends</li>
+      </ul>
+    </section>
+
+    <section class="legal-section">
+      <h2>4. How Your Data Is Used</h2>
+      <p>The limited data we collect is used solely for the following purposes:</p>
+      <ul>
+        <li>To provide real-time room synchronization between participants (your core use of the service)</li>
+        <li>To display your chosen name to other users in the same room</li>
+        <li>To remember your preferences (theme) between sessions for convenience</li>
+        <li>To improve the platform through aggregated, anonymized performance and usage metrics</li>
+        <li>To investigate and address technical issues or abuse reports when reported to us</li>
+      </ul>
+    </section>
+
+    <section class="legal-section">
+      <h2>5. Data Storage &amp; Retention</h2>
+      <p>Room data (playback state, chat, voice notes, user presence) is stored in Firebase Realtime Database, managed by Google. This data is session-scoped:</p>
+      <ul>
+        <li>Data is stored only for the duration of an active room session</li>
+        <li>When all users leave a room, the room data is automatically purged</li>
+        <li>Rooms with no activity for an extended period are cleaned up by our scheduled maintenance processes</li>
+      </ul>
+      <p>Your display name and theme preference are stored only in your browser's localStorage and are never transmitted to our servers except in the context of in-room presence events.</p>
+    </section>
+
+    <section class="legal-section">
+      <h2>6. Firebase &amp; Google Services</h2>
+      <p>Wotchly uses Firebase Realtime Database (by Google) as its backend for real-time synchronization. Google's own privacy policy and data processing terms apply to data handled through Firebase. We use Firebase under a data processing agreement consistent with applicable data protection regulations.</p>
+      <p>Firebase may collect operational metadata such as connection timestamps and bandwidth usage for service delivery and abuse prevention. This data is handled under Google's privacy framework.</p>
+    </section>
+
+    <section class="legal-section">
+      <h2>7. Third-Party Media Services</h2>
+      <p>Wotchly embeds content from numerous third-party platforms including YouTube, Vimeo, Spotify, SoundCloud, Dailymotion, Google Drive, and streaming embed providers. When you interact with embedded players, those platforms may collect their own usage data under their own privacy policies.</p>
+      <p>We strongly recommend reviewing the privacy policies of any third-party platform whose content you access through Wotchly. We have no control over, and assume no responsibility for, data collected by those platforms.</p>
+    </section>
+
+    <section class="legal-section">
+      <h2>8. Cookies &amp; Local Storage</h2>
+      <p>Wotchly itself does not set any tracking cookies. We use browser localStorage only to store:</p>
+      <ul>
+        <li>Your display name (for convenience between sessions)</li>
+        <li>Your theme preference (dark/light mode)</li>
+        <li>Your audio equalizer settings</li>
+        <li>A temporary user session identifier (for room presence only, not linked to any personal data)</li>
+      </ul>
+      <p>Third-party embedded players (YouTube, Spotify, etc.) may set their own cookies when loaded within a room. Those cookies are governed by the respective platform's cookie and privacy policies.</p>
+    </section>
+
+    <section class="legal-section">
+      <h2>9. Children's Privacy</h2>
+      <p>Wotchly is not directed at children under the age of 13, and we do not knowingly collect personal information from children under 13. If you are a parent or guardian and believe your child has provided personal information through Wotchly, please contact us immediately and we will take prompt action to remove any such data.</p>
+    </section>
+
+    <section class="legal-section">
+      <h2>10. Your Rights &amp; Data Control</h2>
+      <p>You have full control over your data on Wotchly:</p>
+      <ul>
+        <li><strong>Access / Deletion</strong> — clear your browser's site data for Wotchly to erase all locally stored preferences and identifiers</li>
+        <li><strong>Opt-out</strong> — since we require no account, there is nothing to opt out of regarding personal profiling</li>
+        <li><strong>Room data</strong> — room data automatically expires when a session ends; you cannot export it as it is not retained</li>
+        <li><strong>Portability</strong> — your display name and preferences are stored only in your browser; export your browser data to port them</li>
+      </ul>
+      <p>Depending on your jurisdiction, you may have additional rights under applicable data protection law (e.g., GDPR, CCPA). Contact us if you wish to exercise any such rights.</p>
+    </section>
+
+    <section class="legal-section">
+      <h2>11. Security</h2>
+      <p>We take the security of your data seriously. Wotchly uses HTTPS encryption for all data in transit. Firebase Realtime Database uses server-side security rules to ensure users can only read and write data within rooms they have legitimately joined.</p>
+      <p>While we implement industry-standard security measures, no system is entirely immune to vulnerabilities. We encourage responsible disclosure of any security concerns via our <a href="contact.html" class="legal-link">Contact page</a>.</p>
+    </section>
+
+    <section class="legal-section">
+      <h2>12. Changes to This Policy</h2>
+      <p>We may update this Privacy Policy as our service evolves or as required by law. Significant changes will be reflected in the "Last Updated" date at the top of this page. We encourage you to review this policy periodically. Continued use of Wotchly after changes constitutes acceptance of the revised policy.</p>
+    </section>
+
+    <section class="legal-section">
+      <h2>13. Contact Us</h2>
+      <p>For any privacy-related questions, data requests, or concerns, please reach out via our <a href="contact.html" class="legal-link">Contact page</a>. We are committed to responding promptly and transparently.</p>
+    </section>
+  </div>
+
+  <div class="legal-footer">
+    <a href="index.html" class="btn btn-secondary">← Back to Home</a>
+    <div class="legal-nav-chips">
+      <a href="terms.html" class="legal-nav-chip legal-nav-chip-terms">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="10" height="10"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Terms
+      </a>
+      <a href="disclaimer.html" class="legal-nav-chip legal-nav-chip-disclaimer">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="10" height="10"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Disclaimer
+      </a>
+      <a href="faq.html" class="legal-nav-chip legal-nav-chip-faq">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="10" height="10"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        FAQ
+      </a>
+      <a href="about.html" class="legal-nav-chip legal-nav-chip-about">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="10" height="10"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        About
+      </a>
+      <a href="contact.html" class="legal-nav-chip legal-nav-chip-contact">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="10" height="10"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Contact
+      </a>
+      <a href="license.html" class="legal-nav-chip legal-nav-chip-license">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="10" height="10"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+        License
+      </a>
+    </div>
+    <div class="legal-copyright">
+      <div class="cr-chips-row">
+        <span class="cr-chip cr-chip-year">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><circle cx="12" cy="12" r="10"/><path d="M15 9.354a4 4 0 1 0 0 5.292"/></svg>
+          <span>2026</span>
+        </span>
+        <span class="cr-chip cr-chip-brand">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="11" height="11"><polygon points="5,3 19,12 5,21"/></svg>
+          <span>Wotchly<em class="cr-dot">.</em></span>
+        </span>
+        <span class="cr-chip cr-chip-rights">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>All Rights Reserved</span>
+        </span>
+        <span class="cr-chip cr-chip-india">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="11" height="11"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+          <span>Made in India</span>
+        </span>
+        <span class="cr-chip cr-chip-crafted">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="11" height="11"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+          <span>Crafted by Adrashtra</span>
+        </span>
+      </div>
+      <div class="cr-chips-row cr-chips-legal">
+        <a href="terms.html" class="cr-chip cr-chip-legal" style="text-decoration:none;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>Terms</span></a>
+        <a href="privacy.html" class="cr-chip cr-chip-legal" style="text-decoration:none;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>Privacy</span></a>
+        <a href="disclaimer.html" class="cr-chip cr-chip-legal" style="text-decoration:none;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span>Disclaimer</span></a>
+        <a href="faq.html" class="cr-chip cr-chip-legal" style="text-decoration:none;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span>FAQ</span></a>
+        <a href="contact.html" class="cr-chip cr-chip-legal" style="text-decoration:none;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Contact</span></a>
+        <a href="about.html" class="cr-chip cr-chip-legal" style="text-decoration:none;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>About</span></a>
+        <a href="license.html" class="cr-chip cr-chip-legal" style="text-decoration:none;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><circle cx="12" cy="12" r="10"/><path d="M15 9.354a4 4 0 1 0 0 5.292"/></svg><span>License</span></a>
+      </div>
+      <span class="india-badge">
+        <span class="india-flag">🇮🇳</span>
+        <span class="india-text">Made in India &nbsp;&bull;&nbsp; Loved by Indians</span>
+        <span class="india-sparkle" aria-hidden="true">✦</span>
+      </span>
+    </div>
+  </div>
+</main>
+
+<script src="legal.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+# ads.txt - Authorized Digital Sellers
+# This file is a placeholder for future ad network configurations.
+# Add your authorized ad network entries below when ready.

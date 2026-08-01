@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Wotchly</title>
+  <style>
+:root{--bg:#08080e;--text:#f0f0f8;--font:'Inter',system-ui,-apple-system,sans-serif}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{height:100%;height:100dvh;font-size:16px;background:var(--bg)}
+body{font-family:var(--font);background:var(--bg);color:var(--text);height:100%;height:100dvh;overflow:hidden;-webkit-font-smoothing:antialiased}
+html.home-page,html.legal-page{overflow-y:auto;height:auto;min-height:100dvh}
+html.home-page body,html.legal-page body{overflow-y:auto;height:auto;min-height:100dvh}
+</style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap">
+  <link rel="preload" as="style" href="/style.css">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23C7B8FF'%3E%3Crect x='2' y='2' width='20' height='20' rx='3'/%3E%3Cpolygon points='10,8 16,12 10,16' fill='white'/%3E%3C/svg%3E">
+</head>
+<body class="admin-body">
+  <div id="authOverlay" class="admin-auth-overlay">
+    <div class="admin-auth-card">
+      <div class="admin-auth-logo">W<span>.</span></div>
+      <input type="password" id="adminPassword" placeholder="Access Code" autocomplete="off">
+      <button id="adminLoginBtn">Enter</button>
+      <div id="authError" class="admin-auth-error"></div>
+    </div>
+  </div>
+
+  <div id="adminPanel" class="admin-panel" style="display: none;">
+    <header class="admin-header">
+      <div class="admin-title">Control Panel</div>
+      <div class="admin-warning-badge" title="Client-side only - for trusted use">DEV</div>
+      <button id="adminLogout" class="admin-logout-btn">Exit</button>
+    </header>
+
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-tab="users">Users</button>
+      <button class="admin-tab" data-tab="rooms">Rooms</button>
+      <button class="admin-tab" data-tab="database">Database</button>
+    </div>
+
+    <div class="admin-content">
+      <section id="usersSection" class="admin-section active">
+        <div class="admin-section-header">
+          <span class="admin-section-title">Live Users</span>
+          <span id="totalUsersCount" class="admin-badge">0</span>
+        </div>
+        <div id="usersList" class="admin-list"></div>
+      </section>
+
+      <section id="roomsSection" class="admin-section">
+        <div class="admin-section-header">
+          <span class="admin-section-title">Active Rooms</span>
+          <span id="totalRoomsCount" class="admin-badge">0</span>
+        </div>
+        <div id="roomsList" class="admin-list"></div>
+      </section>
+
+      <section id="databaseSection" class="admin-section">
+        <div class="admin-section-header">
+          <span class="admin-section-title">Database Control</span>
+        </div>
+        <div class="admin-db-controls">
+          <div class="admin-db-action">
+            <span>Delete All Rooms</span>
+            <button class="admin-danger-btn" data-action="deleteRooms">Delete</button>
+          </div>
+          <div class="admin-db-action">
+            <span>Delete All Chats</span>
+            <button class="admin-danger-btn" data-action="deleteChats">Delete</button>
+          </div>
+          <div class="admin-db-action">
+            <span>Delete All Presence</span>
+            <button class="admin-danger-btn" data-action="deletePresence">Delete</button>
+          </div>
+        </div>
+        <div id="confirmDialog" class="admin-confirm" style="display: none;">
+          <p>Type <strong>DELETE</strong> to confirm:</p>
+          <input type="text" id="confirmInput" placeholder="Type DELETE">
+          <div class="admin-confirm-btns">
+            <button id="confirmCancel" class="admin-cancel-btn">Cancel</button>
+            <button id="confirmDelete" class="admin-danger-btn">Confirm</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="admin-banned-section">
+      <div class="admin-section-header">
+        <span class="admin-section-title">Banned</span>
+        <span id="bannedCount" class="admin-badge">0</span>
+      </div>
+      <div id="bannedList" class="admin-banned-list"></div>
+    </div>
+  </div>
+
+  <script type="module" src="./admin.js"></script>
+</body>
+</html>

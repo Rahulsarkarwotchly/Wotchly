@@ -1,0 +1,82 @@
+{
+  "rules": {
+    "rooms": {
+      "$roomId": {
+        ".read": true,
+        ".write": true,
+
+        "videoUrl":      { ".validate": "newData.isString() && newData.val().length < 10000" },
+        "browserUrl":    { ".validate": "newData.isString() && newData.val().length < 10000" },
+        "websiteUrl":    { ".validate": "newData.isString() && newData.val().length < 10000" },
+        "hdVideoUrl":    { ".validate": "newData.isString() && newData.val().length < 10000" },
+
+        "mode":          { ".validate": "newData.isString() && newData.val().length <= 30" },
+        "source":        { ".validate": "newData.isString() || newData.hasChildren() || !newData.exists()" },
+
+        "playState": {
+          ".validate": "newData.isString() && (newData.val() === 'playing' || newData.val() === 'paused' || newData.val() === 'stopped' || newData.val() === 'buffering')"
+        },
+
+        "currentTime":   { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "duration":      { ".validate": "newData.isNumber() && newData.val() >= 0" },
+
+        "host":          { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100" },
+        "hostId":        { ".validate": "newData.isString() && newData.val().length <= 100" },
+        "maxUsers":      { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 50" },
+        "createdAt":     { ".validate": "newData.isNumber()" },
+        "locked":        { ".validate": "newData.isBoolean()" },
+        "accentColor":   { ".validate": "newData.isString() && newData.val().length <= 30" },
+        "lastUpdatedBy": { ".validate": "newData.isString()" },
+        "lastUpdatedAt": { ".validate": "newData.isNumber()" },
+
+        "users": {
+          ".read": true,
+          ".write": true,
+          "$userId": {
+            ".read": true,
+            ".write": true,
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 50"
+          }
+        },
+
+        "userProfiles": {
+          ".read": true,
+          ".write": true,
+          "$userId": {
+            ".read": true,
+            ".write": true
+          }
+        },
+
+        "chat": {
+          ".read": true,
+          ".write": true,
+          "$messageId": {
+            ".read": true,
+            ".write": true,
+            ".validate": "newData.hasChildren(['timestamp'])",
+
+            "user":      { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 50" },
+            "senderId":  { ".validate": "newData.isString()" },
+            "text":      { ".validate": "newData.isString() && newData.val().length <= 2000" },
+            "type": {
+              ".validate": "newData.isString() && (newData.val() === 'text' || newData.val() === 'audio' || newData.val() === 'voice' || newData.val() === 'system')"
+            },
+            "audioData": { ".validate": "newData.isString() && newData.val().length <= 15728640" },
+            "audioUrl":  { ".validate": "newData.isString() && newData.val().length < 21000000" },
+            "timestamp": { ".validate": "newData.isNumber()" },
+            "color":     { ".validate": "newData.isString() && newData.val().length <= 30" },
+            "$other":    { ".read": true, ".write": true, ".validate": true }
+          }
+        },
+
+        "settings":     { ".read": true, ".write": true },
+        "hostControls": { ".read": true, ".write": true },
+        "browser":      { ".read": true, ".write": true },
+        "website":      { ".read": true, ".write": true },
+
+        "$other": { ".read": true, ".write": true, ".validate": true }
+      }
+    }
+  }
+}
