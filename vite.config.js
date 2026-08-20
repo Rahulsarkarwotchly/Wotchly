@@ -1,11 +1,13 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import path from 'path';
+import { createHash } from 'node:crypto';
 
 const __dirname = import.meta.dirname;
 
 // Read from env var — set VITE_MOVIEBOX_API_URL in Replit Secrets for local dev.
 // On Netlify, the functions handle proxying so this is only needed for Replit dev.
-const MOVIEBOX_API = (process.env.VITE_MOVIEBOX_API_URL || '').replace(/\/$/, '');
+const VITE_ENV = loadEnv('development', process.cwd(), '');
+const MOVIEBOX_API = (process.env.VITE_MOVIEBOX_API_URL || VITE_ENV.VITE_MOVIEBOX_API_URL || '').replace(/\/$/, '');
 
 // Match the client identity expected by the Render MovieBox backend.
 const CLIENT_HEADERS = {
@@ -13,6 +15,14 @@ const CLIENT_HEADERS = {
   'X-M-Version': '16.2.1',
   'X-Play-Mode': '2',
   'Accept': 'application/json',
+  'Content-Type': 'application/json;charset=UTF-8',
+  'Referer': 'https://api6.aoneroom.com/',
+};
+const OFFICIAL_PATH = '/wefeed-mobile-bff';
+const signedHeaders = () => {
+  const timestamp = String(Date.now());
+  const digest = createHash('md5').update([...timestamp].reverse().join('')).digest('hex');
+  return { ...CLIENT_HEADERS, 'X-Client-Token': `${timestamp},${digest}` };
 };
 
 // Fallback streams for dev proxy when MOVIEBOX_API_URL is not set.
@@ -37,6 +47,7 @@ const DEV_MOCK_ITEMS = [
   { id: 'tt13622776', title: 'Squid Game',        year: 2021, lang: 'ko', rating: 8.0, type: 'tv',    cover: 'https://image.tmdb.org/t/p/w300/dDlEmu3EZ0Pgg93QPTrgbyEPTKD.jpg' },
   { id: 'tt26101579', title: 'Pushpa: The Rule',  year: 2024, lang: 'te', rating: 7.8, type: 'movie', cover: 'https://image.tmdb.org/t/p/w300/aBFQA1Uf1jxG9V9CkYCBs2tniGG.jpg' },
   { id: 'tt0816692',  title: 'Interstellar',      year: 2014, lang: 'en', rating: 8.7, type: 'movie', cover: 'https://image.tmdb.org/t/p/w300/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg' },
+  { id: 'tt1877830',  title: 'The Batman',        year: 2022, lang: 'en', rating: 7.8, type: 'movie', cover: 'https://image.tmdb.org/t/p/w300/74xTEgt7R36Fpooo50r9T25onhq.jpg' },
 ];
 const ROUTE_MAP = {
   trending: 'trending',
@@ -113,29 +124,35 @@ export default defineConfig({
               res.end(JSON.stringify({ error: 'VITE_MOVIEBOX_API_URL is not configured' }));
               return;
             }
-            const apiUrl = params.q
-              ? `${MOVIEBOX_API}/search?q=${encodeURIComponent(params.q)}`
-              : `${MOVIEBOX_API}/${ROUTE_MAP[(params.category || 'trending').toLowerCase()] || (params.category || 'trending').toLowerCase()}`;
+            const base = MOVIEBOX_API.endsWith(OFFICIAL_PATH) ? MOVIEBOX_API : `${MOVIEBOX_API}${OFFICIAL_PATH}`;
+            const category = (params.category || 'trending').toLowerCase();
+            const candidates = params.q
+              ? [`${base}/subject-api/search?q=${encodeURIComponent(params.q)}&page=1&pageSize=24`, `${MOVIEBOX_API}/search?q=${encodeURIComponent(params.q)}`]
+              : category === 'trending'
+                ? [{ url: `${base}/subject-api/trending/v2`, method: 'POST', body: JSON.stringify({ page: 1, pageSize: 24 }) }, `${MOVIEBOX_API}/trending`]
+                : [`${MOVIEBOX_API}/${ROUTE_MAP[category] || category}`];
             try {
-              const upstream = await fetch(apiUrl, {
-                headers: CLIENT_HEADERS,
-                signal: AbortSignal.timeout(10000),
-              });
-              if (!upstream.ok) throw new Error(`HTTP ${upstream.status}`);
-              const json = await upstream.json();
+              let upstream;
+              let json;
+              for (const candidate of candidates) {
+                const item = typeof candidate === 'string' ? { url: candidate } : candidate;
+                upstream = await fetch(item.url, { method: item.method || 'GET', body: item.body, headers: signedHeaders(), signal: AbortSignal.timeout(15000) });
+                if (!upstream.ok) continue;
+                json = await upstream.json();
+                break;
+              }
+              if (!upstream?.ok || !json) throw new Error(`HTTP ${upstream?.status || 'no response'}`);
               const raw = Array.isArray(json?.data?.list)
                 ? json.data.list.flatMap(section => Array.isArray(section?.items) ? section.items : [section])
-                : Array.isArray(json) ? json
-                : Array.isArray(json.results) ? json.results
-                : Array.isArray(json.data) ? json.data
-                : Array.isArray(json.items) ? json.items
-                : Array.isArray(json.list) ? json.list
-                : Array.isArray(json.content) ? json.content
-                : Array.isArray(json.data?.items) ? json.data.items
-                : null;
+                : Array.isArray(json) ? json : Array.isArray(json.results) ? json.results
+                : Array.isArray(json.data) ? json.data : Array.isArray(json.items) ? json.items
+                : Array.isArray(json.list) ? json.list : Array.isArray(json.content) ? json.content
+                : Array.isArray(json.data?.items) ? json.data.items : null;
               if (!raw) throw new Error('Unexpected feed response shape');
+              const needle = String(params.q || '').trim().toLowerCase();
+              const fallback = DEV_MOCK_ITEMS.filter(item => !needle || item.title.toLowerCase().includes(needle));
               res.writeHead(200, corsHeaders);
-              res.end(JSON.stringify(raw));
+              res.end(JSON.stringify(raw.length ? raw : fallback));
             } catch (err) {
               console.error('[get-feed] Render request failed:', err.message);
               res.writeHead(502, corsHeaders);

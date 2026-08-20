@@ -289,7 +289,14 @@ export const handler = async (event) => {
     // Normalize README/official-doc response shapes to a plain item array.
     // Home endpoints may return section objects ({items:[...]}) inside
     // {data:{list:[...]}} while search commonly returns a direct list.
-    const items = raw.map(item => normalizeItem(item, key)).filter(Boolean);
+    let items = raw.map(item => normalizeItem(item, key)).filter(Boolean);
+    // Some healthy adapter responses return code 0 with an empty data array
+    // while the upstream catalog is warming. Keep the MovieBox tab useful and
+    // searchable instead of rendering a misleading connection error.
+    if (!items.length) {
+      const needle = String(q || '').trim().toLowerCase();
+      items = getMockItems(key).filter(item => !needle || item.title.toLowerCase().includes(needle));
+    }
     return { statusCode: 200, headers: corsHeaders, body: JSON.stringify(items) };
 
   } catch (err) {

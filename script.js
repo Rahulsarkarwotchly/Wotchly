@@ -1518,7 +1518,9 @@ async function fetchMovieBoxFeed(category = 'trending', query = '') {
   // set, call the Render API directly so developers can test without Netlify CLI.
   let url;
   let requestOptions = {};
-  const useProxy = !import.meta.env.DEV || !RENDER_API_BASE;
+  // Always use the local/Netlify adapter. Direct browser calls bypass the
+  // MovieBox signing headers and are blocked by CORS in the preview.
+  const useProxy = true;
   if (useProxy) {
     url = query
       ? `/.netlify/functions/get-feed?q=${encodeURIComponent(query)}`
@@ -1846,7 +1848,7 @@ function initMovieBoxUI() {
       </div>`;
   }
 
-  // ── Render a horizontal scroll row ─────────────────────────
+  // ── Render a horizontal scroll row ────────────────���────────
   function _renderRow(el, items, showRank = false) {
     if (!el) return;
     if (!items.length) { el.innerHTML = '<p style="color:rgba(255,255,255,.35);padding:.5rem;font-size:.75rem">No items</p>'; return; }
@@ -2020,7 +2022,7 @@ function initMovieBoxUI() {
     });
   });
 
-  // ── Category chips (client-side filter on featured + rankings) ─
+  // ── Category chips (client-side filter on featured + rankings) ��
   document.querySelectorAll('.mb-cat-chip').forEach(chip => {
     chip.addEventListener('click', () => {
       document.querySelectorAll('.mb-cat-chip').forEach(c => c.classList.remove('active'));
