@@ -23,6 +23,7 @@ const CLIENT_HEADERS = {
 
 const LIVE_API_BASE = (
   process.env.MOVIEBOX_API_URL ||
+  process.env.VITE_MOVIEBOX_API_URL ||
   ''
 ).replace(/\/$/, '');
 
@@ -248,25 +249,35 @@ export const handler = async (event) => {
   try {
     let resp;
     let raw = [];
+    const failures = [];
     // The imported UI historically used a small Render adapter contract
     // (/search and /trending). If MOVIEBOX_API_URL points directly at an
     // official BFF host, use the documented endpoints instead.
     for (let i = 0; i < candidates.length; i++) {
       const candidate = candidates[i];
       upstreamUrl = candidate.url;
-      resp = await requestJson(candidate.url, {
-        method: candidate.method || 'GET',
-        body: candidate.body,
-      });
-      if (!resp.ok && resp.status !== 404 && resp.status !== 405) break;
-      if (!resp.ok) continue;
+      try {
+        resp = await requestJson(candidate.url, {
+          method: candidate.method || 'GET',
+          body: candidate.body,
+        });
+      } catch (error) {
+        failures.push(`${candidate.method || 'GET'} ${new URL(candidate.url).pathname}: ${error.name || 'request failed'}`);
+        continue;
+      }
+      if (!resp.ok) {
+        failures.push(`${candidate.method || 'GET'} ${new URL(candidate.url).pathname}: ${resp.status}`);
+        continue;
+      }
       const json = await resp.json();
       raw = extractItems(json);
       // A deployed adapter can return HTTP 200 with an empty list while its
       // upstream route is unsupported. Keep trying the documented BFF routes.
       if (raw.length) break;
     }
-    if (!resp.ok) throw new Error(`Upstream returned ${resp.status}`);
+    if (!resp?.ok) {
+      throw new Error(`All upstream routes failed (${failures.join(', ') || 'no response'})`);
+    }
     if (!raw.length) {
       console.warn('[get-feed] All MovieBox endpoints returned an empty feed');
     }
@@ -278,7 +289,7 @@ export const handler = async (event) => {
     return { statusCode: 200, headers: corsHeaders, body: JSON.stringify(items) };
 
   } catch (err) {
-    console.error('[get-feed] Error:', err.message, '| URL:', upstreamUrl);
+    console.error('[get-feed] Error:', err.message, '| Route:', new URL(upstreamUrl).pathname);
     return { statusCode: 502, headers: corsHeaders, body: JSON.stringify({ error: 'MovieBox API unavailable' }) };
   }
 };
