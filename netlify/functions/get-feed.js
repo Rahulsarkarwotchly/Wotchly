@@ -223,8 +223,8 @@ export const handler = async (event) => {
   const customRoute = routeMap[key] || key;
   const candidates = q
     ? [
-        { url: officialUrl('/subject-api/search', { q, page: 1, pageSize: 24 }) },
         { url: `${LIVE_API_BASE}/search?q=${encodeURIComponent(q)}` },
+        { url: officialUrl('/subject-api/search', { q, page: 1, pageSize: 24 }) },
         { url: officialUrl('/subject-api/search/v2', { q, page: 1, pageSize: 24 }) },
       ]
     : [
