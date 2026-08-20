@@ -231,7 +231,11 @@ export const handler = async (event) => {
     : [
         { url: `${ROOT_API_BASE}/${customRoute === 'trending' ? 'trending' : customRoute}` },
         ...(key === 'trending'
-          ? [{ url: officialUrl('/subject-api/trending/v2', { page: 1, pageSize: 24 }) }]
+          ? [{
+              url: officialUrl('/subject-api/trending/v2'),
+              method: 'POST',
+              body: JSON.stringify({ page: 1, pageSize: 24 }),
+            }]
           : []),
         ...(OFFICIAL_CATEGORY_IDS[key] ? [{
           url: apiUrl('/home/v2/get-list'),

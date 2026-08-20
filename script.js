@@ -1517,6 +1517,7 @@ async function fetchMovieBoxFeed(category = 'trending', query = '') {
   // and keep the API URL server-side. In local Vite dev with VITE_MOVIEBOX_API_URL
   // set, call the Render API directly so developers can test without Netlify CLI.
   let url;
+  let requestOptions = {};
   const useProxy = !import.meta.env.DEV || !RENDER_API_BASE;
   if (useProxy) {
     url = query
@@ -1530,7 +1531,16 @@ async function fetchMovieBoxFeed(category = 'trending', query = '') {
       south: 'south', korean: 'korean', web: 'web-series', drama: 'drama',
     };
     if (query) {
-      url = `${RENDER_API_BASE}/search?q=${encodeURIComponent(query)}`;
+      // The documented MovieBox BFF search route is available when the
+      // configured URL points directly at /wefeed-mobile-bff.
+      url = `${RENDER_API_BASE}/subject-api/search?q=${encodeURIComponent(query)}&page=1&pageSize=24`;
+    } else if (category.toLowerCase() === 'trending') {
+      url = `${RENDER_API_BASE}/subject-api/trending/v2`;
+      requestOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ page: 1, pageSize: 24 }),
+      };
     } else {
       const route = routeMap[category.toLowerCase()] || category.toLowerCase();
       url = `${RENDER_API_BASE}/${route}`;
@@ -1540,7 +1550,8 @@ async function fetchMovieBoxFeed(category = 'trending', query = '') {
   let resp;
   try {
     resp = await fetch(url, {
-      headers: { Accept: 'application/json' },
+      ...requestOptions,
+      headers: { Accept: 'application/json', ...(requestOptions.headers || {}) },
       signal: AbortSignal.timeout(28000),
     });
   } catch (err) {
