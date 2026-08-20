@@ -98,6 +98,9 @@ const routeMap = {
 };
 
 const OFFICIAL_PATH = '/wefeed-mobile-bff';
+const ROOT_API_BASE = LIVE_API_BASE.endsWith(OFFICIAL_PATH)
+  ? LIVE_API_BASE.slice(0, -OFFICIAL_PATH.length)
+  : LIVE_API_BASE;
 const OFFICIAL_CATEGORY_IDS = {
   trending: 1, movie: 2, movies: 2, tv: 5, anime: 8,
   bollywood: 18, hindi: 18, south: 18, korean: 18,
@@ -124,9 +127,78 @@ async function requestJson(url, options = {}) {
 }
 
 function officialUrl(path, params = {}) {
-  const url = new URL(`${LIVE_API_BASE}${OFFICIAL_PATH}${path}`);
+  const base = LIVE_API_BASE.endsWith(OFFICIAL_PATH)
+    ? LIVE_API_BASE
+    : `${LIVE_API_BASE}${OFFICIAL_PATH}`;
+  const url = new URL(`${base}${path}`);
   Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
   return url.toString();
+}
+
+function apiUrl(path, params = {}) {
+  const url = new URL(`${ROOT_API_BASE}${path}`);
+  Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
+  return url.toString();
+}
+
+function extractItems(json) {
+  const arrays = [];
+  const visit = (value, depth = 0) => {
+    if (!value || depth > 5) return;
+    if (Array.isArray(value)) {
+      arrays.push(value);
+      value.forEach(item => visit(item, depth + 1));
+      return;
+    }
+    if (typeof value === 'object') {
+      Object.values(value).forEach(child => visit(child, depth + 1));
+    }
+  };
+  visit(json);
+
+  for (const value of arrays) {
+    const expanded = value.flatMap(item =>
+      Array.isArray(item?.items) ? item.items :
+      Array.isArray(item?.list) ? item.list :
+      [item]
+    );
+    if (expanded.some(item => item && typeof item === 'object' &&
+      (item.subjectId || item.subject_id || item.subjectID || item.id ||
+       item.title || item.name || item.subjectName))) {
+      return expanded;
+    }
+  }
+  return [];
+}
+
+function normalizeItem(item, category) {
+  if (!item || typeof item !== 'object') return null;
+  const id = item.subjectId || item.subject_id || item.subjectID ||
+    item.contentId || item.content_id || item.id;
+  const title = item.title || item.name || item.subjectName || item.subject_name;
+  if (!id || !title) return null;
+
+  const cover = item.cover || item.coverUrl || item.cover_url ||
+    item.poster || item.posterUrl || item.poster_url ||
+    item.thumbnail || item.image || item.pic || '';
+  const rawYear = item.year || item.releaseYear || item.release_year ||
+    item.releaseDate || item.release_date;
+  const yearMatch = String(rawYear || '').match(/\d{4}/);
+  const rating = item.rating ?? item.score ?? item.imdbRating ?? item.imdb_rating;
+  const typeValue = item.type || item.subjectType || item.subject_type || category;
+
+  return {
+    id: String(id),
+    title: String(title),
+    cover: typeof cover === 'string' ? cover : (cover?.url || ''),
+    year: yearMatch ? yearMatch[0] : '',
+    lang: item.lang || item.language || item.originalLanguage || '',
+    rating: rating === undefined || rating === null ? '' : rating,
+    type: typeof typeValue === 'number'
+      ? (typeValue === 1 ? 'movie' : 'tv')
+      : String(typeValue || ''),
+    cat: category || '',
+  };
 }
 
 export const handler = async (event) => {
@@ -151,60 +223,62 @@ export const handler = async (event) => {
   const customRoute = routeMap[key] || key;
   const candidates = q
     ? [
-        `${LIVE_API_BASE}/search?q=${encodeURIComponent(q)}`,
-        officialUrl('/subject-api/search', { q, page: 1, pageSize: 24 }),
-        officialUrl('/subject-api/search/v2', { q, page: 1, pageSize: 24 }),
+        { url: officialUrl('/subject-api/search', { q, page: 1, pageSize: 24 }) },
+        { url: `${LIVE_API_BASE}/search?q=${encodeURIComponent(q)}` },
+        { url: officialUrl('/subject-api/search/v2', { q, page: 1, pageSize: 24 }) },
       ]
     : [
-        `${LIVE_API_BASE}/${customRoute === 'trending' ? 'trending' : customRoute}`,
-        officialUrl('/subject-api/trending/v2', { page: 1, pageSize: 24 }),
+        { url: `${ROOT_API_BASE}/${customRoute === 'trending' ? 'trending' : customRoute}` },
+        ...(key === 'trending'
+          ? [{ url: officialUrl('/subject-api/trending/v2', { page: 1, pageSize: 24 }) }]
+          : []),
+        ...(OFFICIAL_CATEGORY_IDS[key] ? [{
+          url: apiUrl('/home/v2/get-list'),
+          method: 'POST',
+          body: JSON.stringify({
+            categoryId: OFFICIAL_CATEGORY_IDS[key],
+            page: 1,
+            pageSize: 24,
+          }),
+        }] : []),
+        { url: apiUrl('/index/home') },
       ];
-  let apiUrl = candidates[0];
+  let upstreamUrl = candidates[0].url;
 
   try {
-    let resp = await requestJson(apiUrl);
+    let resp;
+    let raw = [];
     // The imported UI historically used a small Render adapter contract
     // (/search and /trending). If MOVIEBOX_API_URL points directly at an
     // official BFF host, use the documented endpoints instead.
-    for (let i = 1; !resp.ok && (resp.status === 404 || resp.status === 405) && i < candidates.length; i++) {
-      apiUrl = candidates[i];
-      resp = await requestJson(apiUrl);
+    for (let i = 0; i < candidates.length; i++) {
+      const candidate = candidates[i];
+      upstreamUrl = candidate.url;
+      resp = await requestJson(candidate.url, {
+        method: candidate.method || 'GET',
+        body: candidate.body,
+      });
+      if (!resp.ok && resp.status !== 404 && resp.status !== 405) break;
+      if (!resp.ok) continue;
+      const json = await resp.json();
+      raw = extractItems(json);
+      // A deployed adapter can return HTTP 200 with an empty list while its
+      // upstream route is unsupported. Keep trying the documented BFF routes.
+      if (raw.length) break;
     }
     if (!resp.ok) throw new Error(`Upstream returned ${resp.status}`);
-
-    const json = await resp.json();
+    if (!raw.length) {
+      console.warn('[get-feed] All MovieBox endpoints returned an empty feed');
+    }
 
     // Normalize README/official-doc response shapes to a plain item array.
     // Home endpoints may return section objects ({items:[...]}) inside
     // {data:{list:[...]}} while search commonly returns a direct list.
-    const candidates = Array.isArray(json?.data?.list)
-      ? json.data.list.flatMap(section => Array.isArray(section?.items) ? section.items : [section])
-      : null;
-    const raw = candidates                                  ? candidates
-              : Array.isArray(json)                         ? json
-              : Array.isArray(json.results)            ? json.results
-              : Array.isArray(json.data)               ? json.data
-              : Array.isArray(json.items)              ? json.items
-              : Array.isArray(json.list)               ? json.list
-              : Array.isArray(json.movies)             ? json.movies
-              : Array.isArray(json.shows)              ? json.shows
-              : Array.isArray(json.content)            ? json.content
-              : Array.isArray(json.data?.results)      ? json.data.results
-              : Array.isArray(json.data?.list)         ? json.data.list
-              : Array.isArray(json.data?.items)        ? json.data.items
-              : Array.isArray(json.response)           ? json.response
-              : Array.isArray(json.data?.movies)       ? json.data.movies
-              : null;
-
-    if (!raw) {
-      console.warn('[get-feed] Unrecognized response shape from Render:', JSON.stringify(json).slice(0, 200));
-      return { statusCode: 502, headers: corsHeaders, body: JSON.stringify({ error: 'Unexpected feed response from MovieBox API' }) };
-    }
-
-    return { statusCode: 200, headers: corsHeaders, body: JSON.stringify(raw) };
+    const items = raw.map(item => normalizeItem(item, key)).filter(Boolean);
+    return { statusCode: 200, headers: corsHeaders, body: JSON.stringify(items) };
 
   } catch (err) {
-    console.error('[get-feed] Error:', err.message, '| URL:', apiUrl);
+    console.error('[get-feed] Error:', err.message, '| URL:', upstreamUrl);
     return { statusCode: 502, headers: corsHeaders, body: JSON.stringify({ error: 'MovieBox API unavailable' }) };
   }
 };
