@@ -13,12 +13,16 @@ const corsHeaders = {
 };
 
 const CLIENT_HEADERS = {
-  'User-Agent': 'MovieBoxPro/16.2.1 (Android 12; Pixel 6)',
-  'X-M-Version': '16.2.1',
-  'X-Play-Mode': '2',
+  'User-Agent': 'MovieBoxPro/16.2.1 (Android 14; com.community.mbox.in)',
   'Accept': 'application/json',
+  'Accept-Encoding': 'gzip',
   'Content-Type': 'application/json;charset=UTF-8',
-  'Referer': 'https://api6.aoneroom.com/',
+  'X-Sign-Version': '2.0',
+  appid: '302770f8bb6543ce8bdff585943a1eca',
+  appkey: 'a9d263ae575d4f5d94eab086a150c67e',
+  region: 'IN',
+  lang: 'en',
+  os: 'android',
 };
 
 const LIVE_API_BASE = (
@@ -27,10 +31,14 @@ const LIVE_API_BASE = (
   ''
 ).replace(/\/$/, '');
 
-// ─── Mock / fallback catalogue ────────────────────────────────────────────────
-// Shown whenever the live Render API is unreachable (cold-start, downtime, etc.).
-// These entries use stable TMDB poster CDN URLs for covers.
-const MOCK_ITEMS = [
+// Render's moviebox-internal-api exposes the stable frontend contract below.
+// Feed: GET /home?page=1
+// Search: GET /search?q=<keyword>&page=1
+const RENDER_ROUTE_BASE = LIVE_API_BASE.replace(/\/$/, '');
+
+/* Legacy demo catalogue intentionally removed: MovieBox cards must always come
+   from the configured Render service. */
+const MOCK_ITEMS = [];
   { id: 'tt15398776', title: 'Oppenheimer',         year: 2023, lang: 'en', rating: 8.3, type: 'movie',  cover: 'https://image.tmdb.org/t/p/w300/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg',  cat: 'hollywood' },
   { id: 'tt9362722',  title: 'Spider-Man: Across the Spider-Verse', year: 2023, lang: 'en', rating: 8.7, type: 'movie', cover: 'https://image.tmdb.org/t/p/w300/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg', cat: 'hollywood' },
   { id: 'tt1517268',  title: 'Barbie',               year: 2023, lang: 'en', rating: 6.9, type: 'movie',  cover: 'https://image.tmdb.org/t/p/w300/iuFNMS8vlbRBa6v4bANVFqVvnGW.jpg', cat: 'hollywood' },
@@ -108,15 +116,9 @@ const OFFICIAL_CATEGORY_IDS = {
 };
 
 function clientHeaders() {
-  // The guest token is intentionally generated per request. Render-backed
-  // deployments may already add the full signature, while direct BFF hosts
-  // accept this part of the native client handshake.
   const timestamp = String(Date.now());
   const digest = createHash('md5').update([...timestamp].reverse().join('')).digest('hex');
-  return {
-    ...CLIENT_HEADERS,
-    'X-Client-Token': `${timestamp},${digest}`,
-  };
+  return { ...CLIENT_HEADERS, 'X-Timestamp': timestamp, 'X-Client-Token': `${timestamp},${digest}` };
 }
 
 async function requestJson(url, options = {}) {
@@ -143,6 +145,14 @@ function apiUrl(path, params = {}) {
 }
 
 function extractItems(json) {
+  if (Array.isArray(json?.data?.list)) {
+    return json.data.list.flatMap(section => Array.isArray(section?.items) ? section.items : [section]);
+  }
+  if (Array.isArray(json?.data?.items)) return json.data.items;
+  if (Array.isArray(json?.data?.subjects)) return json.data.subjects;
+  if (Array.isArray(json?.data)) return json.data;
+  if (Array.isArray(json?.items)) return json.items;
+  if (Array.isArray(json?.list)) return json.list;
   const arrays = [];
   const visit = (value, depth = 0) => {
     if (!value || depth > 5) return;
@@ -175,8 +185,8 @@ function extractItems(json) {
 function normalizeItem(item, category) {
   if (!item || typeof item !== 'object') return null;
   const id = item.subjectId || item.subject_id || item.subjectID ||
-    item.contentId || item.content_id || item.id;
-  const title = item.title || item.name || item.subjectName || item.subject_name;
+    item.contentId || item.content_id || item.id || item.idStr;
+  const title = item.title || item.name || item.subjectName || item.subject_name || item.subjectTitle || item.showName;
   if (!id || !title) return null;
 
   const cover = item.cover || item.coverUrl || item.cover_url ||
@@ -221,13 +231,19 @@ export const handler = async (event) => {
   }
 
   const key = (category || 'trending').toLowerCase();
-  const customRoute = routeMap[key] || key;
   const candidates = q
-    ? [
-        { url: `${LIVE_API_BASE}/search?q=${encodeURIComponent(q)}` },
-        { url: officialUrl('/subject-api/search', { q, page: 1, pageSize: 24 }) },
-        { url: officialUrl('/subject-api/search/v2', { q, page: 1, pageSize: 24 }) },
-      ]
+    ? [{ url: `${RENDER_ROUTE_BASE}/search?q=${encodeURIComponent(q)}&page=1` }]
+    : [{ url: `${RENDER_ROUTE_BASE}/home?page=1` }];
+  /* Direct official routes are only used when the configured URL is itself the
+     MovieBox BFF. The Render repository is the source of truth for this app. */
+  if (LIVE_API_BASE.includes(OFFICIAL_PATH)) {
+    candidates.push(...(q
+      ? [{ url: officialUrl('/subject-api/search', { q, page: 1, pageSize: 24 }), method: 'POST', body: JSON.stringify({ keyword: q, page: 1, pageSize: 24 }) }]
+      : [{ url: officialUrl('/subject-api/daily-movie-rec'), method: 'POST', body: JSON.stringify({ page: 1, pageSize: 24 }) }]));
+  }
+  /* Legacy category candidates are intentionally not used for the Render
+     adapter: /home and /search are the tested routes in moviebox-internal-api. */
+  /*
     : [
         { url: `${ROOT_API_BASE}/${customRoute === 'trending' ? 'trending' : customRoute}` },
         ...(key === 'trending'
@@ -248,6 +264,7 @@ export const handler = async (event) => {
         }] : []),
         { url: apiUrl('/index/home') },
       ];
+  */
   let upstreamUrl = candidates[0].url;
 
   try {
@@ -283,24 +300,24 @@ export const handler = async (event) => {
       throw new Error(`All upstream routes failed (${failures.join(', ') || 'no response'})`);
     }
     if (!raw.length) {
-      console.warn('[get-feed] All MovieBox endpoints returned an empty feed');
+      throw new Error(`Render MovieBox returned an empty ${q ? 'search' : 'home'} response`);
     }
 
     // Normalize README/official-doc response shapes to a plain item array.
     // Home endpoints may return section objects ({items:[...]}) inside
     // {data:{list:[...]}} while search commonly returns a direct list.
     let items = raw.map(item => normalizeItem(item, key)).filter(Boolean);
-    // Some healthy adapter responses return code 0 with an empty data array
-    // while the upstream catalog is warming. Keep the MovieBox tab useful and
-    // searchable instead of rendering a misleading connection error.
     if (!items.length) {
-      const needle = String(q || '').trim().toLowerCase();
-      items = getMockItems(key).filter(item => !needle || item.title.toLowerCase().includes(needle));
+      throw new Error('Render MovieBox returned no content');
     }
     return { statusCode: 200, headers: corsHeaders, body: JSON.stringify(items) };
 
   } catch (err) {
     console.error('[get-feed] Error:', err.message, '| Route:', new URL(upstreamUrl).pathname);
-    return { statusCode: 502, headers: corsHeaders, body: JSON.stringify({ error: 'MovieBox API unavailable' }) };
+    return {
+      statusCode: 502,
+      headers: corsHeaders,
+      body: JSON.stringify({ error: 'MovieBox API unavailable', detail: err.message }),
+    };
   }
 };

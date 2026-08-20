@@ -37,34 +37,6 @@ function devPickFallback(id) {
   return DEV_FALLBACK_STREAMS[Math.abs(h) % DEV_FALLBACK_STREAMS.length];
 }
 
-// Mock catalogue for dev feed when MOVIEBOX_API_URL is not set.
-const DEV_MOCK_ITEMS = [
-  { id: 'tt15398776', title: 'Oppenheimer',      year: 2023, lang: 'en', rating: 8.3, type: 'movie', cover: 'https://image.tmdb.org/t/p/w300/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg' },
-  { id: 'tt9362722',  title: 'Spider-Man: Across the Spider-Verse', year: 2023, lang: 'en', rating: 8.7, type: 'movie', cover: 'https://image.tmdb.org/t/p/w300/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg' },
-  { id: 'tt21823606', title: 'Dune: Part Two',   year: 2024, lang: 'en', rating: 8.5, type: 'movie', cover: 'https://image.tmdb.org/t/p/w300/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg' },
-  { id: 'tt14154714', title: 'Animal',            year: 2023, lang: 'hi', rating: 6.9, type: 'movie', cover: 'https://image.tmdb.org/t/p/w300/pB9L0jAnEQLMKgexqCEocEW8TA.jpg' },
-  { id: 'tt15671028', title: 'Jawan',             year: 2023, lang: 'hi', rating: 7.0, type: 'movie', cover: 'https://image.tmdb.org/t/p/w300/cxqkPwUEnbleTHlQKFmALNRN6Iy.jpg' },
-  { id: 'tt13622776', title: 'Squid Game',        year: 2021, lang: 'ko', rating: 8.0, type: 'tv',    cover: 'https://image.tmdb.org/t/p/w300/dDlEmu3EZ0Pgg93QPTrgbyEPTKD.jpg' },
-  { id: 'tt26101579', title: 'Pushpa: The Rule',  year: 2024, lang: 'te', rating: 7.8, type: 'movie', cover: 'https://image.tmdb.org/t/p/w300/aBFQA1Uf1jxG9V9CkYCBs2tniGG.jpg' },
-  { id: 'tt0816692',  title: 'Interstellar',      year: 2014, lang: 'en', rating: 8.7, type: 'movie', cover: 'https://image.tmdb.org/t/p/w300/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg' },
-  { id: 'tt1877830',  title: 'The Batman',        year: 2022, lang: 'en', rating: 7.8, type: 'movie', cover: 'https://image.tmdb.org/t/p/w300/74xTEgt7R36Fpooo50r9T25onhq.jpg' },
-];
-const ROUTE_MAP = {
-  trending: 'trending',
-  movie: 'movies', movies: 'movies',
-  tv: 'tv',
-  anime: 'anime',
-  midnight: 'midnight',
-  'short drama': 'short-drama', 'short-drama': 'short-drama', shorts: 'short-drama',
-  serials: 'serials',
-  bollywood: 'bollywood',
-  hindi: 'hindi',
-  south: 'south',
-  korean: 'korean',
-  drama: 'drama',
-  hollywood: 'hollywood',
-  web: 'web-series', 'web series': 'web-series', 'web-series': 'web-series',
-};
 
 export default defineConfig({
   build: {
@@ -124,13 +96,15 @@ export default defineConfig({
               res.end(JSON.stringify({ error: 'VITE_MOVIEBOX_API_URL is not configured' }));
               return;
             }
-            const base = MOVIEBOX_API.endsWith(OFFICIAL_PATH) ? MOVIEBOX_API : `${MOVIEBOX_API}${OFFICIAL_PATH}`;
-            const category = (params.category || 'trending').toLowerCase();
+            const base = MOVIEBOX_API.endsWith(OFFICIAL_PATH) ? MOVIEBOX_API : MOVIEBOX_API;
             const candidates = params.q
-              ? [`${base}/subject-api/search?q=${encodeURIComponent(params.q)}&page=1&pageSize=24`, `${MOVIEBOX_API}/search?q=${encodeURIComponent(params.q)}`]
-              : category === 'trending'
-                ? [{ url: `${base}/subject-api/trending/v2`, method: 'POST', body: JSON.stringify({ page: 1, pageSize: 24 }) }, `${MOVIEBOX_API}/trending`]
-                : [`${MOVIEBOX_API}/${ROUTE_MAP[category] || category}`];
+              ? [{ url: `${base}/search?q=${encodeURIComponent(params.q)}&page=1` }]
+              : [{ url: `${base}/home?page=1` }];
+            if (MOVIEBOX_API.includes(OFFICIAL_PATH)) {
+              candidates.push(...(params.q
+                ? [{ url: `${base}/subject-api/search`, method: 'POST', body: JSON.stringify({ keyword: params.q, page: 1, pageSize: 24 }) }]
+                : [{ url: `${base}/subject-api/daily-movie-rec`, method: 'POST', body: JSON.stringify({ page: 1, pageSize: 24 }) }]));
+            }
             try {
               let upstream;
               let json;
@@ -144,19 +118,20 @@ export default defineConfig({
               if (!upstream?.ok || !json) throw new Error(`HTTP ${upstream?.status || 'no response'}`);
               const raw = Array.isArray(json?.data?.list)
                 ? json.data.list.flatMap(section => Array.isArray(section?.items) ? section.items : [section])
+                : Array.isArray(json?.data?.items) ? json.data.items
+                : Array.isArray(json?.data?.subjects) ? json.data.subjects
                 : Array.isArray(json) ? json : Array.isArray(json.results) ? json.results
                 : Array.isArray(json.data) ? json.data : Array.isArray(json.items) ? json.items
                 : Array.isArray(json.list) ? json.list : Array.isArray(json.content) ? json.content
-                : Array.isArray(json.data?.items) ? json.data.items : null;
+                : null;
               if (!raw) throw new Error('Unexpected feed response shape');
-              const needle = String(params.q || '').trim().toLowerCase();
-              const fallback = DEV_MOCK_ITEMS.filter(item => !needle || item.title.toLowerCase().includes(needle));
+              if (!raw.length) throw new Error('Render MovieBox returned no content');
               res.writeHead(200, corsHeaders);
-              res.end(JSON.stringify(raw.length ? raw : fallback));
+              res.end(JSON.stringify(raw));
             } catch (err) {
               console.error('[get-feed] Render request failed:', err.message);
               res.writeHead(502, corsHeaders);
-              res.end(JSON.stringify({ error: 'MovieBox API unavailable' }));
+              res.end(JSON.stringify({ error: 'MovieBox API unavailable', detail: err.message }));
             }
             return;
           }
