@@ -1533,7 +1533,7 @@ async function fetchMovieBoxFeed(category = 'trending', query = '') {
       url = `${RENDER_API_BASE}/search?q=${encodeURIComponent(query)}`;
     } else {
       const route = routeMap[category.toLowerCase()] || category.toLowerCase();
-      url = `${RENDER_API_BASE}/api/home/${route}`;
+      url = `${RENDER_API_BASE}/${route}`;
     }
   }
 
@@ -1584,9 +1584,9 @@ async function fetchMovieBoxFeed(category = 'trending', query = '') {
   }
 
   const items = raw.map(item => ({
-    id:       item.subject_id || item.id || item.slug || String(item._id || ''),
+    id:       item.subjectId || item.subject_id || item.id || item.slug || String(item._id || ''),
     title:    item.title || item.name || '',
-    year:     item.year  || item.release_year || '',
+    year:     item.year  || item.release_year || item.releaseTime || '',
     lang:     item.lang  || item.language     || item.original_language || '',
     rating:   item.rating ?? item.score ?? item.vote_average ?? '',
     cover:    item.cover || item.thumbnail || item.image || item.poster || item.img
@@ -1596,7 +1596,7 @@ async function fetchMovieBoxFeed(category = 'trending', query = '') {
                   : item.backdrop_path
                     ? `https://image.tmdb.org/t/p/w300${item.backdrop_path}`
                     : '',
-    type:     item.type  || item.media_type || '',
+    type:     item.type  || item.media_type || (item.subjectType === 1 ? 'movie' : item.subjectType === 2 ? 'tv' : ''),
     cat:      _inferCat(item),
     gradient: item.gradient || '',
   })).filter(item => {
@@ -1908,7 +1908,10 @@ function initMovieBoxUI() {
 
     if (items?.length) { onSuccess(items); return; }
 
-    const canRetry = (errorType === 'timeout' || errorType === 'server_down') && retryCount < MAX_RETRIES;
+    // A timeout can be a cold Render start; a 5xx is an actual upstream
+    // failure and should show the API-unavailable state instead of repeatedly
+    // telling users that the server is waking up.
+    const canRetry = errorType === 'timeout' && retryCount < MAX_RETRIES;
     if (canRetry) {
       _mbWakeCountdown(onError.el, retryCount + 1, MAX_RETRIES, () => {
         if (_feedVersion === myVersion) _fetchWithRetry(category, query, retryCount + 1, onSuccess, onError);
@@ -1956,7 +1959,7 @@ function initMovieBoxUI() {
     async function _doSearch(retries) {
       const { items, errorType } = await fetchMovieBoxFeed('trending', q);
       if (items?.length) { _renderGrid(resultsGrid, items); return; }
-      if ((errorType === 'timeout' || errorType === 'server_down') && retries > 0) {
+      if (errorType === 'timeout' && retries > 0) {
         _mbWakeCountdown(resultsGrid, MAX_RETRIES - retries + 1, MAX_RETRIES, () => _doSearch(retries - 1));
       } else if (errorType === 'not_configured') {
         _mbShowRowError(resultsGrid, 'not_configured', () => _doSearch(MAX_RETRIES));
