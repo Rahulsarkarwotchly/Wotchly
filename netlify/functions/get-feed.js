@@ -3,6 +3,7 @@
 // The Render service owns the official MovieBox signing/authentication flow.
 // This function keeps the API URL server-side and only exposes the small feed
 // contract needed by the watch-together UI.
+import { createHash } from 'node:crypto';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,7 +15,10 @@ const corsHeaders = {
 const CLIENT_HEADERS = {
   'User-Agent': 'MovieBoxPro/16.2.1 (Android 12; Pixel 6)',
   'X-M-Version': '16.2.1',
+  'X-Play-Mode': '2',
   'Accept': 'application/json',
+  'Content-Type': 'application/json;charset=UTF-8',
+  'Referer': 'https://api6.aoneroom.com/',
 };
 
 const LIVE_API_BASE = (
@@ -93,6 +97,38 @@ const routeMap = {
   web: 'web-series', 'web series': 'web-series', 'web-series': 'web-series',
 };
 
+const OFFICIAL_PATH = '/wefeed-mobile-bff';
+const OFFICIAL_CATEGORY_IDS = {
+  trending: 1, movie: 2, movies: 2, tv: 5, anime: 8,
+  bollywood: 18, hindi: 18, south: 18, korean: 18,
+};
+
+function clientHeaders() {
+  // The guest token is intentionally generated per request. Render-backed
+  // deployments may already add the full signature, while direct BFF hosts
+  // accept this part of the native client handshake.
+  const timestamp = String(Date.now());
+  const digest = createHash('md5').update([...timestamp].reverse().join('')).digest('hex');
+  return {
+    ...CLIENT_HEADERS,
+    'X-Client-Token': `${timestamp},${digest}`,
+  };
+}
+
+async function requestJson(url, options = {}) {
+  return fetch(url, {
+    ...options,
+    headers: { ...clientHeaders(), ...(options.headers || {}) },
+    signal: options.signal || AbortSignal.timeout(20000),
+  });
+}
+
+function officialUrl(path, params = {}) {
+  const url = new URL(`${LIVE_API_BASE}${OFFICIAL_PATH}${path}`);
+  Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
+  return url.toString();
+}
+
 export const handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 204, headers: corsHeaders, body: '' };
@@ -111,22 +147,29 @@ export const handler = async (event) => {
     };
   }
 
-  let apiUrl;
-  if (q) {
-    apiUrl = `${LIVE_API_BASE}/search?q=${encodeURIComponent(q)}`;
-  } else {
-    const key   = (category || 'trending').toLowerCase();
-    const route = routeMap[key] || key;
-    apiUrl = `${LIVE_API_BASE}/${route === 'trending' ? 'trending' : route}`;
-  }
+  const key = (category || 'trending').toLowerCase();
+  const customRoute = routeMap[key] || key;
+  const candidates = q
+    ? [
+        `${LIVE_API_BASE}/search?q=${encodeURIComponent(q)}`,
+        officialUrl('/subject-api/search', { q, page: 1, pageSize: 24 }),
+        officialUrl('/subject-api/search/v2', { q, page: 1, pageSize: 24 }),
+      ]
+    : [
+        `${LIVE_API_BASE}/${customRoute === 'trending' ? 'trending' : customRoute}`,
+        officialUrl('/subject-api/trending/v2', { page: 1, pageSize: 24 }),
+      ];
+  let apiUrl = candidates[0];
 
   try {
-    const resp = await fetch(apiUrl, {
-      headers: CLIENT_HEADERS,
-      // 10s timeout — if Render is cold-starting, the client retry loop handles retries.
-      signal: AbortSignal.timeout(10000),
-    });
-
+    let resp = await requestJson(apiUrl);
+    // The imported UI historically used a small Render adapter contract
+    // (/search and /trending). If MOVIEBOX_API_URL points directly at an
+    // official BFF host, use the documented endpoints instead.
+    for (let i = 1; !resp.ok && (resp.status === 404 || resp.status === 405) && i < candidates.length; i++) {
+      apiUrl = candidates[i];
+      resp = await requestJson(apiUrl);
+    }
     if (!resp.ok) throw new Error(`Upstream returned ${resp.status}`);
 
     const json = await resp.json();
