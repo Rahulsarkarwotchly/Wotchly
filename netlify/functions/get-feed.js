@@ -1,7 +1,8 @@
 // netlify/functions/get-feed.js
 // Proxies MovieBox feed/search requests to the Render API server-side.
-// Fallback: when the live API is unreachable, returns curated mock data so the
-// browse UI stays functional and never shows "API unavailable" hard errors.
+// The Render service owns the official MovieBox signing/authentication flow.
+// This function keeps the API URL server-side and only exposes the small feed
+// contract needed by the watch-together UI.
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,12 +11,14 @@ const corsHeaders = {
   'Content-Type': 'application/json',
 };
 
-// Desktop Chrome UA — avoids Cloudflare bot-detection on the Render backend.
-const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+const CLIENT_HEADERS = {
+  'User-Agent': 'MovieBoxPro/16.2.1 (Android 12; Pixel 6)',
+  'X-M-Version': '16.2.1',
+  'Accept': 'application/json',
+};
 
 const LIVE_API_BASE = (
   process.env.MOVIEBOX_API_URL ||
-  process.env.VITE_MOVIEBOX_API_URL ||
   ''
 ).replace(/\/$/, '');
 
@@ -97,13 +100,14 @@ export const handler = async (event) => {
 
   const { category, q } = event.queryStringParameters ?? {};
 
-  // MOVIEBOX_API_URL not configured → serve mock immediately.
+  // Keep the failure explicit in production. The frontend already renders a
+  // retry state for 502/503 responses, so it won't mistake demo data for live
+  // MovieBox content.
   if (!LIVE_API_BASE) {
-    const items = q ? [] : getMockItems(category);
     return {
-      statusCode: 200,
+      statusCode: 503,
       headers: corsHeaders,
-      body: JSON.stringify(items),
+      body: JSON.stringify({ error: 'MOVIEBOX_API_URL is not configured' }),
     };
   }
 
@@ -113,16 +117,12 @@ export const handler = async (event) => {
   } else {
     const key   = (category || 'trending').toLowerCase();
     const route = routeMap[key] || key;
-    apiUrl = `${LIVE_API_BASE}/api/home/${route}`;
+    apiUrl = `${LIVE_API_BASE}/${route === 'trending' ? 'trending' : route}`;
   }
 
   try {
     const resp = await fetch(apiUrl, {
-      headers: {
-        'User-Agent': BROWSER_UA,
-        'Accept': 'application/json',
-        'Accept-Language': 'en-US,en;q=0.9',
-      },
+      headers: CLIENT_HEADERS,
       // 10s timeout — if Render is cold-starting, the client retry loop handles retries.
       signal: AbortSignal.timeout(10000),
     });
@@ -131,10 +131,14 @@ export const handler = async (event) => {
 
     const json = await resp.json();
 
-    // Normalize various response shapes to a plain array.
-    // Render API may return [], {results:[]}, {data:[]}, {items:[]}, {list:[]},
-    // {movies:[]}, {shows:[]}, {content:[]}, or deeply-nested variants.
-    const raw = Array.isArray(json)                   ? json
+    // Normalize README/official-doc response shapes to a plain item array.
+    // Home endpoints may return section objects ({items:[...]}) inside
+    // {data:{list:[...]}} while search commonly returns a direct list.
+    const candidates = Array.isArray(json?.data?.list)
+      ? json.data.list.flatMap(section => Array.isArray(section?.items) ? section.items : [section])
+      : null;
+    const raw = candidates                                  ? candidates
+              : Array.isArray(json)                         ? json
               : Array.isArray(json.results)            ? json.results
               : Array.isArray(json.data)               ? json.data
               : Array.isArray(json.items)              ? json.items
@@ -149,24 +153,15 @@ export const handler = async (event) => {
               : Array.isArray(json.data?.movies)       ? json.data.movies
               : null;
 
-    if (!raw || raw.length === 0) {
-      // Unrecognized shape or empty array — serve mock so UI never shows error.
-      console.warn('[get-feed] Unrecognized/empty response shape from Render:', JSON.stringify(json).slice(0, 200));
-      const fallback = q ? [] : getMockItems(category);
-      return { statusCode: 200, headers: corsHeaders, body: JSON.stringify(fallback) };
+    if (!raw) {
+      console.warn('[get-feed] Unrecognized response shape from Render:', JSON.stringify(json).slice(0, 200));
+      return { statusCode: 502, headers: corsHeaders, body: JSON.stringify({ error: 'Unexpected feed response from MovieBox API' }) };
     }
 
     return { statusCode: 200, headers: corsHeaders, body: JSON.stringify(raw) };
 
   } catch (err) {
     console.error('[get-feed] Error:', err.message, '| URL:', apiUrl);
-
-    // API down / timeout → serve mock data so the UI stays functional.
-    const items = q ? [] : getMockItems(category);
-    return {
-      statusCode: 200,
-      headers: corsHeaders,
-      body: JSON.stringify(items),
-    };
+    return { statusCode: 502, headers: corsHeaders, body: JSON.stringify({ error: 'MovieBox API unavailable' }) };
   }
 };

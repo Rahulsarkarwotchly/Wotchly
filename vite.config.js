@@ -7,8 +7,13 @@ const __dirname = import.meta.dirname;
 // On Netlify, the functions handle proxying so this is only needed for Replit dev.
 const MOVIEBOX_API = (process.env.VITE_MOVIEBOX_API_URL || '').replace(/\/$/, '');
 
-// Desktop Chrome UA — avoids Cloudflare bot-detection on Render backends.
-const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+// Match the client identity expected by the Render MovieBox backend.
+const CLIENT_HEADERS = {
+  'User-Agent': 'MovieBoxPro/16.2.1 (Android 12; Pixel 6)',
+  'X-M-Version': '16.2.1',
+  'X-Play-Mode': '2',
+  'Accept': 'application/json',
+};
 
 // Fallback streams for dev proxy when MOVIEBOX_API_URL is not set.
 const DEV_FALLBACK_STREAMS = [
@@ -102,28 +107,39 @@ export default defineConfig({
 
           // ── get-feed ─────────────────────────────────────────────────────
           if (fn === 'get-feed') {
-            // No API URL configured → serve mock items immediately
+            // Local Replit preview needs its own VITE_MOVIEBOX_API_URL secret.
             if (!MOVIEBOX_API) {
-              res.writeHead(200, corsHeaders);
-              res.end(JSON.stringify(DEV_MOCK_ITEMS));
+              res.writeHead(503, corsHeaders);
+              res.end(JSON.stringify({ error: 'VITE_MOVIEBOX_API_URL is not configured' }));
               return;
             }
             const apiUrl = params.q
               ? `${MOVIEBOX_API}/search?q=${encodeURIComponent(params.q)}`
-              : `${MOVIEBOX_API}/api/home/${ROUTE_MAP[(params.category || 'trending').toLowerCase()] || (params.category || 'trending').toLowerCase()}`;
+              : `${MOVIEBOX_API}/${ROUTE_MAP[(params.category || 'trending').toLowerCase()] || (params.category || 'trending').toLowerCase()}`;
             try {
               const upstream = await fetch(apiUrl, {
-                headers: { 'User-Agent': BROWSER_UA, Accept: 'application/json' },
+                headers: CLIENT_HEADERS,
                 signal: AbortSignal.timeout(10000),
               });
               if (!upstream.ok) throw new Error(`HTTP ${upstream.status}`);
-              const body = await upstream.text();
+              const json = await upstream.json();
+              const raw = Array.isArray(json?.data?.list)
+                ? json.data.list.flatMap(section => Array.isArray(section?.items) ? section.items : [section])
+                : Array.isArray(json) ? json
+                : Array.isArray(json.results) ? json.results
+                : Array.isArray(json.data) ? json.data
+                : Array.isArray(json.items) ? json.items
+                : Array.isArray(json.list) ? json.list
+                : Array.isArray(json.content) ? json.content
+                : Array.isArray(json.data?.items) ? json.data.items
+                : null;
+              if (!raw) throw new Error('Unexpected feed response shape');
               res.writeHead(200, corsHeaders);
-              res.end(body);
-            } catch {
-              // API down / timeout → return mock data so the browse UI stays functional
-              res.writeHead(200, corsHeaders);
-              res.end(JSON.stringify(params.q ? [] : DEV_MOCK_ITEMS));
+              res.end(JSON.stringify(raw));
+            } catch (err) {
+              console.error('[get-feed] Render request failed:', err.message);
+              res.writeHead(502, corsHeaders);
+              res.end(JSON.stringify({ error: 'MovieBox API unavailable' }));
             }
             return;
           }
@@ -135,31 +151,28 @@ export default defineConfig({
               res.end(JSON.stringify({ error: 'Missing required query parameter: id' }));
               return;
             }
-            // No API URL configured → serve fallback stream immediately
+            // Local Replit preview needs its own VITE_MOVIEBOX_API_URL secret.
             if (!MOVIEBOX_API) {
-              res.writeHead(200, corsHeaders);
-              res.end(JSON.stringify({ stream_url: devPickFallback(params.id), fallback: true, fallback_reason: 'dev_no_api_url' }));
+              res.writeHead(503, corsHeaders);
+              res.end(JSON.stringify({ error: 'VITE_MOVIEBOX_API_URL is not configured' }));
               return;
             }
-            const apiUrl = `${MOVIEBOX_API}/api/stream/${encodeURIComponent(params.id)}`;
+            const apiUrl = `${MOVIEBOX_API}/stream/${encodeURIComponent(params.id)}?season=${encodeURIComponent(params.season || '1')}&episode=${encodeURIComponent(params.episode || '1')}&quality=${encodeURIComponent(params.quality || '720P')}`;
             try {
               const upstream = await fetch(apiUrl, {
-                headers: { 'User-Agent': BROWSER_UA, Accept: 'application/json' },
+                headers: CLIENT_HEADERS,
                 signal: AbortSignal.timeout(10000),
               });
-              if (upstream.status === 422 || upstream.status === 442) {
-                res.writeHead(200, corsHeaders);
-                res.end(JSON.stringify({ stream_url: devPickFallback(params.id), fallback: true, fallback_reason: String(upstream.status) }));
-                return;
-              }
               if (!upstream.ok) throw new Error(`HTTP ${upstream.status}`);
               const data = await upstream.json();
-              if (!data.stream_url) throw new Error('no stream_url');
+              const streamUrl = data.stream_url || data.url || data.data?.stream_url || data.data?.url;
+              if (!streamUrl) throw new Error('no playable stream URL');
               res.writeHead(200, corsHeaders);
-              res.end(JSON.stringify(data));
-            } catch {
-              res.writeHead(200, corsHeaders);
-              res.end(JSON.stringify({ stream_url: devPickFallback(params.id), fallback: true, fallback_reason: 'upstream_error' }));
+              res.end(JSON.stringify({ ...data, stream_url: streamUrl }));
+            } catch (err) {
+              console.error('[get-stream] Render request failed:', err.message);
+              res.writeHead(502, corsHeaders);
+              res.end(JSON.stringify({ error: 'MovieBox API unavailable' }));
             }
             return;
           }

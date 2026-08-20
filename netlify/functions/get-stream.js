@@ -1,7 +1,8 @@
 // netlify/functions/get-stream.js
 // Proxies stream URL requests to the live Render MovieBox API.
-// Fallback: when the live API is unreachable or the title is unavailable,
-// returns a stable open-source demo stream so the player never hard-crashes.
+// The Render service owns the official MovieBox signing/authentication flow.
+// This function normalizes the documented `url` response to the frontend's
+// `stream_url` contract while keeping cookies server-side where possible.
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,12 +11,15 @@ const corsHeaders = {
   'Content-Type': 'application/json',
 };
 
-// Desktop Chrome UA — avoids Cloudflare bot-detection on the Render backend.
-const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+const CLIENT_HEADERS = {
+  'User-Agent': 'MovieBoxPro/16.2.1 (Android 12; Pixel 6)',
+  'X-M-Version': '16.2.1',
+  'X-Play-Mode': '2',
+  'Accept': 'application/json',
+};
 
 const LIVE_API_BASE = (
   process.env.MOVIEBOX_API_URL ||
-  process.env.VITE_MOVIEBOX_API_URL ||
   ''
 ).replace(/\/$/, '');
 
@@ -55,88 +59,46 @@ export const handler = async (event) => {
     };
   }
 
-  // MOVIEBOX_API_URL not configured → serve fallback immediately (no point trying).
+  const params = event.queryStringParameters ?? {};
+  const season = params.season || '1';
+  const episode = params.episode || '1';
+  const quality = params.quality || '720P';
+
+  // Do not hide a missing production configuration behind a demo stream.
   if (!LIVE_API_BASE) {
     return {
-      statusCode: 200,
+      statusCode: 503,
       headers: corsHeaders,
-      body: JSON.stringify({
-        stream_url: pickFallback(id),
-        fallback: true,
-        fallback_reason: 'server_not_configured',
-      }),
+      body: JSON.stringify({ error: 'MOVIEBOX_API_URL is not configured' }),
     };
   }
 
   try {
-    const apiUrl = `${LIVE_API_BASE}/api/stream/${encodeURIComponent(id)}`;
+    const apiUrl = `${LIVE_API_BASE}/stream/${encodeURIComponent(id)}?season=${encodeURIComponent(season)}&episode=${encodeURIComponent(episode)}&quality=${encodeURIComponent(quality)}`;
     const resp = await fetch(apiUrl, {
-      headers: {
-        'User-Agent': BROWSER_UA,
-        'Accept': 'application/json',
-        'Accept-Language': 'en-US,en;q=0.9',
-      },
+      headers: CLIENT_HEADERS,
       signal: AbortSignal.timeout(20000),
     });
 
-    // 422 = unprocessable / content not streamable
-    // 442 = custom "content unavailable" from the upstream MovieBox API
-    // → fall back silently instead of surfacing an error to the player
-    if (resp.status === 422 || resp.status === 442) {
-      return {
-        statusCode: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          stream_url: pickFallback(id),
-          fallback: true,
-          fallback_reason: resp.status === 422 ? 'not_streamable' : 'unavailable',
-        }),
-      };
-    }
-
     if (!resp.ok) {
       console.error(`[get-stream] Upstream ${resp.status} for id=${id}`);
-      return {
-        statusCode: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          stream_url: pickFallback(id),
-          fallback: true,
-          fallback_reason: `upstream_${resp.status}`,
-        }),
-      };
+      return { statusCode: resp.status === 404 ? 404 : 502, headers: corsHeaders, body: JSON.stringify({ error: 'MovieBox stream unavailable' }) };
     }
 
     const data = await resp.json();
-
-    // Live API returned 200 but no usable stream URL → fall back
-    if (!data.stream_url) {
-      return {
-        statusCode: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          stream_url: pickFallback(id),
-          fallback: true,
-          fallback_reason: 'no_stream_url',
-        }),
-      };
+    const streamUrl = data.stream_url || data.url || data.data?.stream_url || data.data?.url;
+    if (!streamUrl) {
+      return { statusCode: 502, headers: corsHeaders, body: JSON.stringify({ error: 'MovieBox returned no playable stream URL' }) };
     }
 
-    return { statusCode: 200, headers: corsHeaders, body: JSON.stringify(data) };
-
-  } catch (err) {
-    console.error('[get-stream] API error:', err.message);
-    // Network error, timeout, or any unhandled exception → fallback stream
     return {
       statusCode: 200,
       headers: corsHeaders,
-      body: JSON.stringify({
-        stream_url: pickFallback(id),
-        fallback: true,
-        fallback_reason: (err.name === 'TimeoutError' || err.name === 'AbortError')
-          ? 'timeout'
-          : `error_${err.message}`,
-      }),
+      body: JSON.stringify({ ...data, stream_url: streamUrl }),
     };
+
+  } catch (err) {
+    console.error('[get-stream] API error:', err.message);
+    return { statusCode: 502, headers: corsHeaders, body: JSON.stringify({ error: 'MovieBox API unavailable' }) };
   }
 };
