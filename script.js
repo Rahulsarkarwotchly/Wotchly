@@ -1527,10 +1527,14 @@ async function fetchMovieBoxFeed(category = 'trending', query = '') {
   const proxyUrl = query
     ? `/.netlify/functions/get-feed?q=${encodeURIComponent(query)}`
     : `/.netlify/functions/get-feed?category=${encodeURIComponent(category)}`;
-  // Prefer the Render service whenever VITE_MOVIEBOX_API_URL exists. This is
-  // required for the static Render deployment, where /.netlify/functions does
-  // not exist. The proxy remains a compatibility fallback for Netlify.
-  const urls = RENDER_API_BASE ? [directUrl, proxyUrl] : [proxyUrl];
+  // Use the same-origin proxy first when the app is running on Netlify, Vite,
+  // or the v0 preview. This avoids browser CORS failures. A static Render
+  // deployment has no proxy, so it falls back to the direct API URL.
+  const host = typeof window !== 'undefined' ? window.location.hostname : '';
+  const proxyLikelyAvailable = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.netlify.app') || host.endsWith('.vercel.run');
+  const urls = RENDER_API_BASE
+    ? (proxyLikelyAvailable ? [proxyUrl, directUrl] : [directUrl, proxyUrl])
+    : [proxyUrl];
   let url = urls[0];
 
   let resp;

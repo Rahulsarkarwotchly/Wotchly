@@ -1,12 +1,14 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import path from 'path';
 
 const __dirname = import.meta.dirname;
+const VITE_ENV = loadEnv(process.env.NODE_ENV || 'development', __dirname, '');
 
-// Read from env var — set VITE_MOVIEBOX_API_URL in Replit Secrets for local dev.
-// On Netlify, the functions handle proxying so this is only needed for Replit dev.
+// Read VITE_MOVIEBOX_API_URL from Vite's loaded env files as well as the
+// process environment. Vite does not automatically copy .env values into
+// process.env while evaluating vite.config.js.
 const MOVIEBOX_API = (() => {
-  const raw = (process.env.VITE_MOVIEBOX_API_URL || '').trim();
+  const raw = (VITE_ENV.VITE_MOVIEBOX_API_URL || process.env.VITE_MOVIEBOX_API_URL || '').trim();
   if (!raw) return '';
   return `${/^https?:\/\//i.test(raw) ? '' : 'https://'}${raw}`.replace(/\/$/, '');
 })();
