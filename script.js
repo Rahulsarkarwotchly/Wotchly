@@ -1643,9 +1643,22 @@ function _clientFallback(id) {
 
 async function loadMovieBoxStream(movieId) {
   let resp;
-  try {
-    resp = await fetch(`/.netlify/functions/get-stream?id=${encodeURIComponent(movieId)}`);
-  } catch {
+  const streamUrls = [
+    ...(RENDER_API_BASE ? [`${RENDER_API_BASE}/stream/${encodeURIComponent(movieId)}`] : []),
+    `/.netlify/functions/get-stream?id=${encodeURIComponent(movieId)}`,
+  ];
+  for (const streamUrl of streamUrls) {
+    try {
+      resp = await fetch(streamUrl, {
+        headers: { Accept: 'application/json' },
+        signal: AbortSignal.timeout(28000),
+      });
+      if (resp.ok || resp.status !== 404) break;
+    } catch {
+      // Try the Netlify compatibility proxy before using the client fallback.
+    }
+  }
+  if (!resp) {
     // Network-level failure (no connection, CORS block, etc.) — use client fallback.
     showNotification('MovieBox: server unreachable — playing demo stream', 'info');
     return _clientFallback(movieId);
@@ -1670,7 +1683,8 @@ async function loadMovieBoxStream(movieId) {
   }
 
   const data = await resp.json().catch(() => null);
-  if (!data || !data.stream_url) {
+  const streamUrl = data?.stream_url || data?.url;
+  if (!streamUrl) {
     showNotification('MovieBox: no stream URL — playing demo stream', 'info');
     return _clientFallback(movieId);
   }
@@ -1680,7 +1694,7 @@ async function loadMovieBoxStream(movieId) {
     showNotification('MovieBox: live server offline — playing demo stream', 'info');
   }
 
-  return data.stream_url;
+  return streamUrl;
 }
 
 /**
