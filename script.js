@@ -1530,7 +1530,7 @@ async function fetchMovieBoxFeed(category = 'trending', query = '') {
   // Prefer the Render service whenever VITE_MOVIEBOX_API_URL exists. This is
   // required for the static Render deployment, where /.netlify/functions does
   // not exist. The proxy remains a compatibility fallback for Netlify.
-  const urls = RENDER_API_BASE ? [directUrl, proxyUrl] : [proxyUrl];
+  const urls = [directUrl];
   let url = urls[0];
 
   let resp;
@@ -1583,27 +1583,8 @@ async function fetchMovieBoxFeed(category = 'trending', query = '') {
     return [];
   }
   let raw = collect(json);
-  // Render currently returns HTTP 200 with an empty data array. On Netlify,
-  // retry through the serverless proxy so its catalogue fallback can keep the
-  // feed/search usable instead of surfacing a misleading connection error.
-  if (!raw.length && RENDER_API_BASE && url === directUrl && proxyUrl !== directUrl) {
-    try {
-      const proxyResp = await fetch(proxyUrl, {
-        headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(28000),
-      });
-      if (proxyResp.ok) {
-        resp = proxyResp;
-        json = await proxyResp.json();
-        raw = collect(json);
-      }
-    } catch (err) {
-      console.warn('[MovieBox] Proxy fallback failed:', err?.message);
-    }
-  }
   if (!raw) {
-    // Unknown shape but server returned 200 — log and treat as empty so
-    // the caller's retry/fallback logic can take over instead of hard-failing.
+    // Unknown upstream response shape; surface it as a real API failure.
     console.warn('[MovieBox] Unexpected response shape from server:', JSON.stringify(json).slice(0, 150));
     return { items: [], errorType: 'unknown', status: resp.status };
   }
@@ -1634,82 +1615,31 @@ async function fetchMovieBoxFeed(category = 'trending', query = '') {
   return { items, errorType: null, status: 200 };
 }
 
-/**
- * Fetch the stream URL for a MovieBox title from the Netlify function.
- *
- * Fallback policy:
- *  - Network error (TypeError) or 404  → function not deployed (Vite dev, no Netlify CLI).
- *    Use known demo HLS streams so the feature is testable locally; no error toast.
- *  - Any other HTTP error (5xx, 502 …)  → surface a notification; return null so the
- *    caller knows the load failed rather than silently playing wrong content.
- *  - 200 but no stream_url              → surface a notification; return null.
- */
-// Client-side fallback streams — used when the Netlify function is unreachable
-// (e.g. Vite dev without Netlify CLI, network error, 404).
-const CLIENT_FALLBACK_STREAMS = [
-  'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-];
-function _clientFallback(id) {
-  let h = 0;
-  const s = String(id || '');
-  for (let i = 0; i < s.length; i++) h = (Math.imul(h, 31) + s.charCodeAt(i)) | 0;
-  return CLIENT_FALLBACK_STREAMS[Math.abs(h) % CLIENT_FALLBACK_STREAMS.length];
-}
-
 async function loadMovieBoxStream(movieId) {
   let resp;
-  const streamUrls = [
-    ...(RENDER_API_BASE ? [`${RENDER_API_BASE}/stream/${encodeURIComponent(movieId)}`] : []),
-    `/.netlify/functions/get-stream?id=${encodeURIComponent(movieId)}`,
-  ];
-  for (const streamUrl of streamUrls) {
-    try {
-      resp = await fetch(streamUrl, {
-        headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(28000),
-      });
-      if (resp.ok || resp.status !== 404) break;
-    } catch {
-      // Try the Netlify compatibility proxy before using the client fallback.
-    }
+  try {
+    resp = await fetch(`${RENDER_API_BASE}/stream/${encodeURIComponent(movieId)}`, {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(28000),
+    });
+  } catch {
+    resp = null;
   }
   if (!resp) {
-    // Network-level failure (no connection, CORS block, etc.) — use client fallback.
-    showNotification('MovieBox: server unreachable — playing demo stream', 'info');
-    return _clientFallback(movieId);
-  }
-
-  // 404 = function not deployed (local Vite dev without Netlify CLI) — use client fallback.
-  if (resp.status === 404) {
-    showNotification('MovieBox: playing demo stream (deploy on Netlify for live content)', 'info');
-    return _clientFallback(movieId);
-  }
-
-  // 422 / 442 are now handled server-side (function returns a fallback stream_url).
-  // This block is kept as a safety net in case an older deployment is still running.
-  if (resp.status === 422 || resp.status === 442) {
-    showNotification('Live stream unavailable — playing demo stream', 'info');
-    return _clientFallback(movieId);
+    showNotification('MovieBox: server unreachable', 'error');
+    return null;
   }
 
   if (!resp.ok) {
-    showNotification('MovieBox: server error — playing demo stream', 'info');
-    return _clientFallback(movieId);
+    showNotification(`MovieBox: server error (${resp.status})`, 'error');
+    return null;
   }
 
   const data = await resp.json().catch(() => null);
   const streamUrl = data?.stream_url || data?.url;
   if (!streamUrl) {
-    showNotification('MovieBox: no stream URL — playing demo stream', 'info');
-    return _clientFallback(movieId);
-  }
-
-  // Server returned a fallback stream — surface a soft info toast (not an error).
-  if (data.fallback) {
-    showNotification('MovieBox: live server offline — playing demo stream', 'info');
+    showNotification('MovieBox: response did not contain a stream URL', 'error');
+    return null;
   }
 
   return streamUrl;
