@@ -111,10 +111,15 @@ export default defineConfig({
 
           // ── get-feed ─────────────────────────────────────────────────────
           if (fn === 'get-feed') {
-            // Local Replit preview needs its own VITE_MOVIEBOX_API_URL secret.
+            // Keep local preview usable when the optional API variable is not
+            // mounted; production Netlify uses the server-side function.
             if (!MOVIEBOX_API) {
-              res.writeHead(503, corsHeaders);
-              res.end(JSON.stringify({ error: 'VITE_MOVIEBOX_API_URL is not configured' }));
+              const query = String(params.q || '').trim().toLowerCase();
+              const items = query
+                ? DEV_MOCK_ITEMS.filter(item => item.title.toLowerCase().includes(query))
+                : DEV_MOCK_ITEMS;
+              res.writeHead(200, { ...corsHeaders, 'X-MovieBox-Source': 'local-fallback' });
+              res.end(JSON.stringify(items));
               return;
             }
             const apiUrl = params.q

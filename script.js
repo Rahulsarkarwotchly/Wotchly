@@ -1527,10 +1527,10 @@ async function fetchMovieBoxFeed(category = 'trending', query = '') {
   const proxyUrl = query
     ? `/.netlify/functions/get-feed?q=${encodeURIComponent(query)}`
     : `/.netlify/functions/get-feed?category=${encodeURIComponent(category)}`;
-  // Prefer the Render service whenever VITE_MOVIEBOX_API_URL exists. This is
-  // required for the static Render deployment, where /.netlify/functions does
-  // not exist. The proxy remains a compatibility fallback for Netlify.
-  const urls = [directUrl];
+  // Use the same-origin Netlify function first. Direct browser calls to Render
+  // are not CORS-safe on the production Netlify deployment. The direct URL is
+  // retained only as a fallback for the static/non-Netlify deployment.
+  const urls = [proxyUrl, directUrl];
   let url = urls[0];
 
   let resp;
@@ -1616,16 +1616,21 @@ async function fetchMovieBoxFeed(category = 'trending', query = '') {
 }
 
 async function loadMovieBoxStream(movieId) {
-  let resp;
-  try {
-    resp = await fetch(`${RENDER_API_BASE}/stream/${encodeURIComponent(movieId)}`, {
-      headers: { Accept: 'application/json' },
-      signal: AbortSignal.timeout(28000),
-    });
-  } catch {
-    resp = null;
+  const directUrl = `${RENDER_API_BASE}/stream/${encodeURIComponent(movieId)}`;
+  const proxyUrl = `/.netlify/functions/get-stream?id=${encodeURIComponent(movieId)}`;
+  let resp = null;
+  for (const candidateUrl of [proxyUrl, directUrl]) {
+    try {
+      resp = await fetch(candidateUrl, {
+        headers: { Accept: 'application/json' },
+        signal: AbortSignal.timeout(28000),
+      });
+      if (resp.ok) break;
+    } catch {
+      resp = null;
+    }
   }
-  if (!resp) {
+  if (!resp || !resp.ok) {
     showNotification('MovieBox: server unreachable', 'error');
     return null;
   }
