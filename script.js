@@ -1369,7 +1369,7 @@ async function loadSharedContent(url) {
 // Netlify deployments can still fall back to the server-side function when it
 // is not configured. Never assume the hosting platform from import.meta.env.DEV.
 const RENDER_API_BASE = (() => {
-  const raw = ((typeof import.meta !== 'undefined' && import.meta.env?.VITE_MOVIEBOX_API_URL) || '').trim();
+  const raw = ((typeof import.meta !== 'undefined' && (import.meta.env?.VITE_MOVIEBOX_API_URL || import.meta.env?.MOVIEBOX_API_URL)) || 'https://moviebox-internal-api.onrender.com').trim();
   if (!raw) return '';
   return `${/^https?:\/\//i.test(raw) ? '' : 'https://'}${raw}`.replace(/\/$/, '');
 })();
@@ -2608,7 +2608,7 @@ function _applyEmbedParams(url, audioLang, subLang) {
     const host = u.hostname.toLowerCase();
     const isDub = audioLang && audioLang !== 'ja'; // any non-Japanese = dubbed
 
-    // ── Audio / Dub ──────────────────────────────────────────
+    // ── Audio / Dub ───────────────────────────────────���──────
     if (audioLang) {
       if (host.includes('vidsrc.xyz')) {
         // vidsrc.xyz: ?dub=1 switches to dubbed audio; ds_lang selects track
@@ -3156,7 +3156,7 @@ function listenToRoom() {
     if (vtc) vtc.textContent = userCount > 0 ? ` (${userCount})` : '';
     updateHCPMemberCount();
 
-    // ── MovieBox: handle currentMovieId sync ─────────────────────
+    // ── MovieBox: handle currentMovieId sync ───────────────────��─
     // Each client resolves the stream URL locally from the Netlify function
     // so the actual streaming link never travels through Firebase (IP-lock safe).
     //
