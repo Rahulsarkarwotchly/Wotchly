@@ -1507,7 +1507,7 @@ function _inferCat(item) {
  *
  * errorType values:
  *   null            – success
- *   'not_configured'– Netlify function returned 503 (MOVIEBOX_API_URL not set)
+ *   'not_configured'– Netlify function returned 503 because backend settings are missing
  *   'server_down'   – upstream API returned a non-OK status (5xx)
  *   'timeout'       – request timed out (Render cold-start likely)
  *   'network'       – failed to reach the Netlify function at all
@@ -1693,7 +1693,7 @@ const _MB_SVG = {
 function _mbShowRowError(el, type, onRetry) {
   if (!el) return;
   const cfg = {
-    not_configured: { icon: _MB_SVG.gear,   title: 'API not configured',      msg: 'Add <code style="background:rgba(255,255,255,.1);padding:1px 5px;border-radius:3px">MOVIEBOX_API_URL</code> to Netlify environment variables.', retryLabel: null },
+    not_configured: { icon: _MB_SVG.gear,   title: 'API not configured',      msg: 'Configure the MovieBox backend in Netlify server settings.', retryLabel: null },
     timeout:        { icon: _MB_SVG.clock,  title: 'Server is starting up',   msg: 'The API server is waking from inactivity. This takes ~30s.', retryLabel: 'Retry' },
     server_down:    { icon: _MB_SVG.server, title: 'API unavailable',         msg: 'The MovieBox server returned an error. Try again shortly.', retryLabel: 'Retry' },
     network:        { icon: _MB_SVG.wifi,   title: 'Connection error',        msg: 'Could not reach the server. Check your connection.', retryLabel: 'Retry' },
@@ -1864,7 +1864,7 @@ function initMovieBoxUI() {
     if (heroSk) heroSk.style.display = '';
   }
 
-  // ── Filter rankings row by sub-pill ─────────────────────────
+  // ── Filter rankings row by sub-pill ──���──────────────────────
   function _applyRankFilter() {
     let items = _trendingItems;
     if (_activeRankCat !== 'all') {
@@ -2000,7 +2000,7 @@ function initMovieBoxUI() {
     });
   });
 
-  // ── Rankings sub-pills ───────────────────────────────────────
+  // ── Rankings sub-pills ────────────────────��──────────────────
   document.querySelectorAll('.mb-rank-subpill').forEach(pill => {
     pill.addEventListener('click', () => {
       document.querySelectorAll('.mb-rank-subpill').forEach(p => p.classList.remove('active'));

@@ -3,8 +3,7 @@ import path from 'path';
 
 const __dirname = import.meta.dirname;
 
-// Read from env var — set VITE_MOVIEBOX_API_URL in Replit Secrets for local dev.
-// On Netlify, the functions handle proxying so this is only needed for Replit dev.
+// Netlify Functions own the backend connection; local preview uses safe fallbacks.
 const MOVIEBOX_API = (() => {
   const raw = '';
   if (!raw) return '';
@@ -19,7 +18,7 @@ const CLIENT_HEADERS = {
   'Accept': 'application/json',
 };
 
-// Fallback streams for dev proxy when MOVIEBOX_API_URL is not set.
+// Fallback streams for the local dev proxy.
 const DEV_FALLBACK_STREAMS = [
   'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
   'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
@@ -31,7 +30,7 @@ function devPickFallback(id) {
   return DEV_FALLBACK_STREAMS[Math.abs(h) % DEV_FALLBACK_STREAMS.length];
 }
 
-// Mock catalogue for dev feed when MOVIEBOX_API_URL is not set.
+// Mock catalogue for the local dev feed.
 const DEV_MOCK_ITEMS = [
   { id: 'tt15398776', title: 'Oppenheimer',      year: 2023, lang: 'en', rating: 8.3, type: 'movie', cover: 'https://image.tmdb.org/t/p/w300/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg' },
   { id: 'tt9362722',  title: 'Spider-Man: Across the Spider-Verse', year: 2023, lang: 'en', rating: 8.7, type: 'movie', cover: 'https://image.tmdb.org/t/p/w300/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg' },

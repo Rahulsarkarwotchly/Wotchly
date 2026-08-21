@@ -36,12 +36,12 @@ VITE_FIREBASE_PROJECT_ID
 VITE_FIREBASE_STORAGE_BUCKET
 VITE_FIREBASE_MESSAGING_SENDER_ID
 VITE_FIREBASE_APP_ID
-# MOVIEBOX_API_URL is configured only in Netlify server-side environment variables.
+# MovieBox backend settings are configured only in Netlify server-side environment variables.
 ```
 
 ## Notes
 - The Render backend is on the free tier — it cold-starts in ~30s after inactivity. Netlify function timeout is set to 26s (free-tier max) with 25s internal HTTP timeouts to handle this gracefully.
-- `MOVIEBOX_API_URL` must NOT have a `VITE_` prefix — it's server-side only (Netlify function reads it; the browser never sees it).
+- The MovieBox backend endpoint is read only inside Netlify Functions; it is never bundled into browser code.
 - The `public/_redirects` and `_headers` files are copied into `dist/` by vite-plugin-static-copy.
 
 ## User preferences
