@@ -36,7 +36,7 @@ VITE_FIREBASE_PROJECT_ID
 VITE_FIREBASE_STORAGE_BUCKET
 VITE_FIREBASE_MESSAGING_SENDER_ID
 VITE_FIREBASE_APP_ID
-MOVIEBOX_API_URL   # base URL of the Render backend, no trailing slash
+# MOVIEBOX_API_URL is configured only in Netlify server-side environment variables.
 ```
 
 ## Notes

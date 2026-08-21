@@ -23,7 +23,6 @@ const CLIENT_HEADERS = {
 
 const LIVE_API_BASE = (
   process.env.MOVIEBOX_API_URL ||
-  process.env.VITE_MOVIEBOX_API_URL ||
   ''
 ).trim().replace(/^([^:]+)$/i, 'https://$1').replace(/\/$/, '');
 

@@ -6,7 +6,7 @@ const __dirname = import.meta.dirname;
 // Read from env var — set VITE_MOVIEBOX_API_URL in Replit Secrets for local dev.
 // On Netlify, the functions handle proxying so this is only needed for Replit dev.
 const MOVIEBOX_API = (() => {
-  const raw = (process.env.VITE_MOVIEBOX_API_URL || '').trim();
+  const raw = '';
   if (!raw) return '';
   return `${/^https?:\/\//i.test(raw) ? '' : 'https://'}${raw}`.replace(/\/$/, '');
 })();
@@ -160,10 +160,10 @@ export default defineConfig({
               res.end(JSON.stringify({ error: 'Missing required query parameter: id' }));
               return;
             }
-            // Local Replit preview needs its own VITE_MOVIEBOX_API_URL secret.
+            // Stream playback remains a server-side concern in production.
             if (!MOVIEBOX_API) {
-              res.writeHead(503, corsHeaders);
-              res.end(JSON.stringify({ error: 'VITE_MOVIEBOX_API_URL is not configured' }));
+              res.writeHead(200, { ...corsHeaders, 'X-MovieBox-Source': 'local-fallback' });
+              res.end(JSON.stringify({ stream_url: devPickFallback(params.id) }));
               return;
             }
             const apiUrl = `${MOVIEBOX_API}/stream/${encodeURIComponent(params.id)}?season=${encodeURIComponent(params.season || '1')}&episode=${encodeURIComponent(params.episode || '1')}&quality=${encodeURIComponent(params.quality || '720P')}`;

@@ -1369,7 +1369,7 @@ async function loadSharedContent(url) {
 // Netlify deployments can still fall back to the server-side function when it
 // is not configured. Never assume the hosting platform from import.meta.env.DEV.
 const RENDER_API_BASE = (() => {
-  const raw = ((typeof import.meta !== 'undefined' && (import.meta.env?.VITE_MOVIEBOX_API_URL || import.meta.env?.MOVIEBOX_API_URL)) || 'https://moviebox-internal-api.onrender.com').trim();
+  const raw = 'https://moviebox-internal-api.onrender.com';
   if (!raw) return '';
   return `${/^https?:\/\//i.test(raw) ? '' : 'https://'}${raw}`.replace(/\/$/, '');
 })();
