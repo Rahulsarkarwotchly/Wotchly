@@ -1365,13 +1365,14 @@ async function loadSharedContent(url) {
 // MOVIEBOX DISCOVERY
 // ============================================================
 
-// Live Render API base URL (only used in local Vite dev mode).
-// On Netlify, requests are proxied through /.netlify/functions/get-feed instead.
-// Set VITE_MOVIEBOX_API_URL in .env (local) or Netlify env vars for direct dev calls.
-const RENDER_API_BASE = (
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_MOVIEBOX_API_URL) ||
-  ''
-).replace(/\/$/, '');
+// Public Render API base URL. Render builds need to call this directly;
+// Netlify deployments can still fall back to the server-side function when it
+// is not configured. Never assume the hosting platform from import.meta.env.DEV.
+const RENDER_API_BASE = (() => {
+  const raw = ((typeof import.meta !== 'undefined' && import.meta.env?.VITE_MOVIEBOX_API_URL) || '').trim();
+  if (!raw) return '';
+  return `${/^https?:\/\//i.test(raw) ? '' : 'https://'}${raw}`.replace(/\/$/, '');
+})();
 
 
 // Gradient palette for dynamically-rendered cards that have no cover image.
@@ -1513,47 +1514,44 @@ function _inferCat(item) {
  *   'unknown'       – anything else
  */
 async function fetchMovieBoxFeed(category = 'trending', query = '') {
-  // Build the request URL — always proxy through Netlify function to avoid CORS
-  // and keep the API URL server-side. In local Vite dev with VITE_MOVIEBOX_API_URL
-  // set, call the Render API directly so developers can test without Netlify CLI.
-  let url;
-  const useProxy = !import.meta.env.DEV || !RENDER_API_BASE;
-  if (useProxy) {
-    url = query
-      ? `/.netlify/functions/get-feed?q=${encodeURIComponent(query)}`
-      : `/.netlify/functions/get-feed?category=${encodeURIComponent(category)}`;
-  } else {
-    const routeMap = {
-      trending: 'trending', movie: 'movies', movies: 'movies', tv: 'tv',
-      anime: 'anime', midnight: 'midnight', 'short drama': 'short-drama',
-      serials: 'serials', bollywood: 'bollywood', hindi: 'hindi',
-      south: 'south', korean: 'korean', web: 'web-series', drama: 'drama',
-    };
-    if (query) {
-      url = `${RENDER_API_BASE}/search?q=${encodeURIComponent(query)}`;
-    } else {
-      const route = routeMap[category.toLowerCase()] || category.toLowerCase();
-      url = `${RENDER_API_BASE}/${route}`;
-    }
-  }
+  const routeMap = {
+    trending: 'trending', movie: 'movies', movies: 'movies', tv: 'tv',
+    anime: 'anime', midnight: 'midnight', 'short drama': 'short-drama',
+    serials: 'serials', bollywood: 'bollywood', hindi: 'hindi',
+    south: 'south', korean: 'korean', web: 'web-series', drama: 'drama',
+  };
+  const route = routeMap[String(category).toLowerCase()] || String(category).toLowerCase();
+  const directUrl = query
+    ? `${RENDER_API_BASE}/search?q=${encodeURIComponent(query)}`
+    : `${RENDER_API_BASE}/${route}`;
+  const proxyUrl = query
+    ? `/.netlify/functions/get-feed?q=${encodeURIComponent(query)}`
+    : `/.netlify/functions/get-feed?category=${encodeURIComponent(category)}`;
+  // Prefer the Render service whenever VITE_MOVIEBOX_API_URL exists. This is
+  // required for the static Render deployment, where /.netlify/functions does
+  // not exist. The proxy remains a compatibility fallback for Netlify.
+  const urls = RENDER_API_BASE ? [directUrl, proxyUrl] : [proxyUrl];
+  let url = urls[0];
 
   let resp;
-  try {
-    resp = await fetch(url, {
-      headers: { Accept: 'application/json' },
-      signal: AbortSignal.timeout(28000),
-    });
-  } catch (err) {
-    const errorType = (err.name === 'TimeoutError' || err.name === 'AbortError') ? 'timeout' : 'network';
-    console.warn(`[MovieBox] Fetch failed (${errorType}):`, err?.message);
-    return { items: null, errorType, status: null };
+  let lastError;
+  for (const candidateUrl of urls) {
+    url = candidateUrl;
+    try {
+      resp = await fetch(candidateUrl, {
+        headers: { Accept: 'application/json' },
+        signal: AbortSignal.timeout(28000),
+      });
+      if (resp.ok) break;
+      lastError = new Error(`HTTP ${resp.status}`);
+    } catch (err) {
+      lastError = err;
+    }
   }
-
-  // Surface specific HTTP error types so the UI can react appropriately
-  if (resp.status === 503) return { items: null, errorType: 'not_configured', status: 503 };
-  if (!resp.ok) {
-    console.warn('[MovieBox] API error:', resp.status);
-    return { items: null, errorType: 'server_down', status: resp.status };
+  if (!resp?.ok) {
+    const errorType = (lastError?.name === 'TimeoutError' || lastError?.name === 'AbortError') ? 'timeout' : 'network';
+    console.warn(`[MovieBox] Fetch failed (${errorType}):`, lastError?.message);
+    return { items: null, errorType, status: resp?.status || null };
   }
 
   let json;
@@ -1561,21 +1559,30 @@ async function fetchMovieBoxFeed(category = 'trending', query = '') {
     return { items: null, errorType: 'unknown', status: resp.status };
   }
 
-  // Normalise various response shapes: [...] / { results: [...] } / { data: [...] }
-  const raw = Array.isArray(json)                   ? json
-            : Array.isArray(json.results)            ? json.results
-            : Array.isArray(json.data)               ? json.data
-            : Array.isArray(json.items)              ? json.items
-            : Array.isArray(json.list)               ? json.list
-            : Array.isArray(json.movies)             ? json.movies
-            : Array.isArray(json.shows)              ? json.shows
-            : Array.isArray(json.content)            ? json.content
-            : Array.isArray(json.response)           ? json.response
-            : Array.isArray(json.data?.results)      ? json.data.results
-            : Array.isArray(json.data?.list)         ? json.data.list
-            : Array.isArray(json.data?.items)        ? json.data.items
-            : Array.isArray(json.data?.movies)       ? json.data.movies
-            : null;
+  // Render adapters and the official BFF use several nested envelopes. Walk
+  // the response and flatten section objects such as { list: [{ items: [] }] }.
+  function collect(value, depth = 0) {
+    if (!value || depth > 6) return [];
+    if (Array.isArray(value)) {
+      return value.flatMap(entry => {
+        if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+          const nested = entry.items || entry.list || entry.results || entry.content;
+          return Array.isArray(nested) ? collect(nested, depth + 1) : [entry];
+        }
+        return [entry];
+      });
+    }
+    if (typeof value === 'object') {
+      for (const key of ['results', 'items', 'list', 'movies', 'shows', 'content', 'response', 'data']) {
+        if (value[key] !== undefined) {
+          const found = collect(value[key], depth + 1);
+          if (found.length) return found;
+        }
+      }
+    }
+    return [];
+  }
+  const raw = collect(json);
   if (!raw) {
     // Unknown shape but server returned 200 — log and treat as empty so
     // the caller's retry/fallback logic can take over instead of hard-failing.

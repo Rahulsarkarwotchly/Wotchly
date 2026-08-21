@@ -5,7 +5,11 @@ const __dirname = import.meta.dirname;
 
 // Read from env var — set VITE_MOVIEBOX_API_URL in Replit Secrets for local dev.
 // On Netlify, the functions handle proxying so this is only needed for Replit dev.
-const MOVIEBOX_API = (process.env.VITE_MOVIEBOX_API_URL || '').replace(/\/$/, '');
+const MOVIEBOX_API = (() => {
+  const raw = (process.env.VITE_MOVIEBOX_API_URL || '').trim();
+  if (!raw) return '';
+  return `${/^https?:\/\//i.test(raw) ? '' : 'https://'}${raw}`.replace(/\/$/, '');
+})();
 
 // Match the client identity expected by the Render MovieBox backend.
 const CLIENT_HEADERS = {
