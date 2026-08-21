@@ -25,7 +25,7 @@ const LIVE_API_BASE = (
   process.env.MOVIEBOX_API_URL ||
   process.env.VITE_MOVIEBOX_API_URL ||
   ''
-).replace(/\/$/, '');
+).trim().replace(/^([^:]+)$/i, 'https://$1').replace(/\/$/, '');
 
 // ─── Mock / fallback catalogue ────────────────────────────────────────────────
 // Shown whenever the live Render API is unreachable (cold-start, downtime, etc.).
