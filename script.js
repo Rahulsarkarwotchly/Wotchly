@@ -1365,14 +1365,7 @@ async function loadSharedContent(url) {
 // MOVIEBOX DISCOVERY
 // ============================================================
 
-// Public Render API base URL. Render builds need to call this directly;
-// Netlify deployments can still fall back to the server-side function when it
-// is not configured. Never assume the hosting platform from import.meta.env.DEV.
-const RENDER_API_BASE = (() => {
-  const raw = ((typeof import.meta !== 'undefined' && (import.meta.env?.VITE_MOVIEBOX_API_URL || import.meta.env?.MOVIEBOX_API_URL)) || 'https://moviebox-internal-api.onrender.com').trim();
-  if (!raw) return '';
-  return `${/^https?:\/\//i.test(raw) ? '' : 'https://'}${raw}`.replace(/\/$/, '');
-})();
+// Keep the Render URL server-side. Netlify Functions proxy all MovieBox requests.
 
 
 // Gradient palette for dynamically-rendered cards that have no cover image.
@@ -1507,7 +1500,7 @@ function _inferCat(item) {
  *
  * errorType values:
  *   null            – success
- *   'not_configured'– Netlify function returned 503 (MOVIEBOX_API_URL not set)
+ *   'not_configured'– Netlify function is missing its server-side API configuration
  *   'server_down'   – upstream API returned a non-OK status (5xx)
  *   'timeout'       – request timed out (Render cold-start likely)
  *   'network'       – failed to reach the Netlify function at all
@@ -1521,36 +1514,23 @@ async function fetchMovieBoxFeed(category = 'trending', query = '') {
     south: 'south', korean: 'korean', web: 'web-series', drama: 'drama',
   };
   const route = routeMap[String(category).toLowerCase()] || String(category).toLowerCase();
-  const directUrl = query
-    ? `${RENDER_API_BASE}/search?q=${encodeURIComponent(query)}`
-    : `${RENDER_API_BASE}/${route}`;
-  const proxyUrl = query
+  const url = query
     ? `/.netlify/functions/get-feed?q=${encodeURIComponent(query)}`
     : `/.netlify/functions/get-feed?category=${encodeURIComponent(category)}`;
-  // Prefer the Render service whenever VITE_MOVIEBOX_API_URL exists. This is
-  // required for the static Render deployment, where /.netlify/functions does
-  // not exist. The proxy remains a compatibility fallback for Netlify.
-  const urls = [directUrl];
-  let url = urls[0];
 
   let resp;
   let lastError;
-  for (const candidateUrl of urls) {
-    url = candidateUrl;
-    try {
-      resp = await fetch(candidateUrl, {
-        headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(28000),
-      });
-      if (resp.ok) break;
-      lastError = new Error(`HTTP ${resp.status}`);
-    } catch (err) {
-      lastError = err;
-    }
+  try {
+    resp = await fetch(url, {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(28000),
+    });
+  } catch (err) {
+    lastError = err;
   }
   if (!resp?.ok) {
     const errorType = (lastError?.name === 'TimeoutError' || lastError?.name === 'AbortError') ? 'timeout' : 'network';
-    console.warn(`[MovieBox] Fetch failed (${errorType}):`, lastError?.message);
+    console.warn(`[MovieBox] Fetch failed (${errorType}):`, lastError?.message || `HTTP ${resp?.status}`);
     return { items: null, errorType, status: resp?.status || null };
   }
 
@@ -1618,7 +1598,7 @@ async function fetchMovieBoxFeed(category = 'trending', query = '') {
 async function loadMovieBoxStream(movieId) {
   let resp;
   try {
-    resp = await fetch(`${RENDER_API_BASE}/stream/${encodeURIComponent(movieId)}`, {
+    resp = await fetch(`/.netlify/functions/get-stream?id=${encodeURIComponent(movieId)}`, {
       headers: { Accept: 'application/json' },
       signal: AbortSignal.timeout(28000),
     });
@@ -1688,7 +1668,7 @@ const _MB_SVG = {
 function _mbShowRowError(el, type, onRetry) {
   if (!el) return;
   const cfg = {
-    not_configured: { icon: _MB_SVG.gear,   title: 'API not configured',      msg: 'Add <code style="background:rgba(255,255,255,.1);padding:1px 5px;border-radius:3px">MOVIEBOX_API_URL</code> to Netlify environment variables.', retryLabel: null },
+    not_configured: { icon: _MB_SVG.gear,   title: 'API not configured',      msg: 'Configure the MovieBox API in the Netlify server environment.', retryLabel: null },
     timeout:        { icon: _MB_SVG.clock,  title: 'Server is starting up',   msg: 'The API server is waking from inactivity. This takes ~30s.', retryLabel: 'Retry' },
     server_down:    { icon: _MB_SVG.server, title: 'API unavailable',         msg: 'The MovieBox server returned an error. Try again shortly.', retryLabel: 'Retry' },
     network:        { icon: _MB_SVG.wifi,   title: 'Connection error',        msg: 'Could not reach the server. Check your connection.', retryLabel: 'Retry' },
@@ -2608,7 +2588,7 @@ function _applyEmbedParams(url, audioLang, subLang) {
     const host = u.hostname.toLowerCase();
     const isDub = audioLang && audioLang !== 'ja'; // any non-Japanese = dubbed
 
-    // ── Audio / Dub ───────────────────────────────────���──────
+    // ── Audio / Dub ────────────���──────────────────────���──────
     if (audioLang) {
       if (host.includes('vidsrc.xyz')) {
         // vidsrc.xyz: ?dub=1 switches to dubbed audio; ds_lang selects track
