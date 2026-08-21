@@ -1582,7 +1582,25 @@ async function fetchMovieBoxFeed(category = 'trending', query = '') {
     }
     return [];
   }
-  const raw = collect(json);
+  let raw = collect(json);
+  // Render currently returns HTTP 200 with an empty data array. On Netlify,
+  // retry through the serverless proxy so its catalogue fallback can keep the
+  // feed/search usable instead of surfacing a misleading connection error.
+  if (!raw.length && RENDER_API_BASE && url === directUrl && proxyUrl !== directUrl) {
+    try {
+      const proxyResp = await fetch(proxyUrl, {
+        headers: { Accept: 'application/json' },
+        signal: AbortSignal.timeout(28000),
+      });
+      if (proxyResp.ok) {
+        resp = proxyResp;
+        json = await proxyResp.json();
+        raw = collect(json);
+      }
+    } catch (err) {
+      console.warn('[MovieBox] Proxy fallback failed:', err?.message);
+    }
+  }
   if (!raw) {
     // Unknown shape but server returned 200 — log and treat as empty so
     // the caller's retry/fallback logic can take over instead of hard-failing.

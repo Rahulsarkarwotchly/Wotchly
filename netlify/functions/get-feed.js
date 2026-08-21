@@ -278,15 +278,27 @@ export const handler = async (event) => {
     if (!resp?.ok) {
       throw new Error(`All upstream routes failed (${failures.join(', ') || 'no response'})`);
     }
-    if (!raw.length) {
-      console.warn('[get-feed] All MovieBox endpoints returned an empty feed');
+    // A 200 response with an empty list means the Render adapter reached its
+    // upstream but MovieBox returned no catalogue data. Do not turn that into
+    // a misleading 502/network error; keep the UI usable with the local
+    // catalogue while the upstream issue is investigated.
+    const normalized = raw.map(item => normalizeItem(item, key)).filter(Boolean);
+    if (!normalized.length) {
+      console.warn('[get-feed] Upstream returned an empty feed; using local catalogue fallback');
+      const pool = q
+        ? [...MOCK_ITEMS, ...MOCK_KOREAN].filter(item => item.title.toLowerCase().includes(q.toLowerCase()))
+        : getMockItems(category);
+      return {
+        statusCode: 200,
+        headers: { ...corsHeaders, 'X-MovieBox-Source': 'fallback-catalogue' },
+        body: JSON.stringify(pool),
+      };
     }
 
     // Normalize README/official-doc response shapes to a plain item array.
     // Home endpoints may return section objects ({items:[...]}) inside
     // {data:{list:[...]}} while search commonly returns a direct list.
-    const items = raw.map(item => normalizeItem(item, key)).filter(Boolean);
-    return { statusCode: 200, headers: corsHeaders, body: JSON.stringify(items) };
+    return { statusCode: 200, headers: corsHeaders, body: JSON.stringify(normalized) };
 
   } catch (err) {
     console.error('[get-feed] Error:', err.message, '| Route:', new URL(upstreamUrl).pathname);
