@@ -22,7 +22,7 @@ const CLIENT_HEADERS = {
 };
 
 const LIVE_API_BASE = (
-  process.env.MOVIEBOX_API_URL ||
+  process.env.BACKEND_ORIGIN ||
   ''
 ).replace(/\/$/, '');
 
@@ -108,7 +108,7 @@ export const handler = async (event) => {
     return {
       statusCode: 503,
       headers: corsHeaders,
-      body: JSON.stringify({ error: 'MOVIEBOX_API_URL is not configured' }),
+      body: JSON.stringify({ error: 'backend origin is not configured' }),
     };
   }
 
