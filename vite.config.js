@@ -5,8 +5,7 @@ const __dirname = import.meta.dirname;
 
 // Netlify Functions own the backend connection; local preview uses safe fallbacks.
 const MOVIEBOX_API = (() => {
-  const raw = '';
-  if (!raw) return '';
+  const raw = 'https://moviebox-internal-api.onrender.com';
   return `${/^https?:\/\//i.test(raw) ? '' : 'https://'}${raw}`.replace(/\/$/, '');
 })();
 
@@ -30,17 +29,6 @@ function devPickFallback(id) {
   return DEV_FALLBACK_STREAMS[Math.abs(h) % DEV_FALLBACK_STREAMS.length];
 }
 
-// Mock catalogue for the local dev feed.
-const DEV_MOCK_ITEMS = [
-  { id: 'tt15398776', title: 'Oppenheimer',      year: 2023, lang: 'en', rating: 8.3, type: 'movie', cover: 'https://image.tmdb.org/t/p/w300/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg' },
-  { id: 'tt9362722',  title: 'Spider-Man: Across the Spider-Verse', year: 2023, lang: 'en', rating: 8.7, type: 'movie', cover: 'https://image.tmdb.org/t/p/w300/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg' },
-  { id: 'tt21823606', title: 'Dune: Part Two',   year: 2024, lang: 'en', rating: 8.5, type: 'movie', cover: 'https://image.tmdb.org/t/p/w300/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg' },
-  { id: 'tt14154714', title: 'Animal',            year: 2023, lang: 'hi', rating: 6.9, type: 'movie', cover: 'https://image.tmdb.org/t/p/w300/pB9L0jAnEQLMKgexqCEocEW8TA.jpg' },
-  { id: 'tt15671028', title: 'Jawan',             year: 2023, lang: 'hi', rating: 7.0, type: 'movie', cover: 'https://image.tmdb.org/t/p/w300/cxqkPwUEnbleTHlQKFmALNRN6Iy.jpg' },
-  { id: 'tt13622776', title: 'Squid Game',        year: 2021, lang: 'ko', rating: 8.0, type: 'tv',    cover: 'https://image.tmdb.org/t/p/w300/dDlEmu3EZ0Pgg93QPTrgbyEPTKD.jpg' },
-  { id: 'tt26101579', title: 'Pushpa: The Rule',  year: 2024, lang: 'te', rating: 7.8, type: 'movie', cover: 'https://image.tmdb.org/t/p/w300/aBFQA1Uf1jxG9V9CkYCBs2tniGG.jpg' },
-  { id: 'tt0816692',  title: 'Interstellar',      year: 2014, lang: 'en', rating: 8.7, type: 'movie', cover: 'https://image.tmdb.org/t/p/w300/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg' },
-];
 const ROUTE_MAP = {
   trending: 'trending',
   movie: 'movies', movies: 'movies',
@@ -110,17 +98,6 @@ export default defineConfig({
 
           // ── get-feed ─────────────────────────────────────────────────────
           if (fn === 'get-feed') {
-            // Keep local preview usable when the optional API variable is not
-            // mounted; production Netlify uses the server-side function.
-            if (!MOVIEBOX_API) {
-              const query = String(params.q || '').trim().toLowerCase();
-              const items = query
-                ? DEV_MOCK_ITEMS.filter(item => item.title.toLowerCase().includes(query))
-                : DEV_MOCK_ITEMS;
-              res.writeHead(200, { ...corsHeaders, 'X-MovieBox-Source': 'local-fallback' });
-              res.end(JSON.stringify(items));
-              return;
-            }
             const apiUrl = params.q
               ? `${MOVIEBOX_API}/search?q=${encodeURIComponent(params.q)}`
               : `${MOVIEBOX_API}/${ROUTE_MAP[(params.category || 'trending').toLowerCase()] || (params.category || 'trending').toLowerCase()}`;
