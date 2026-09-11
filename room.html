@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#0a0a12">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,9 +17,10 @@ html.home-page body,html.legal-page body{overflow-y:auto;height:auto;min-height:
 </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap">
   <link rel="preload" as="style" href="/style.css">
   <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/premium.css">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
   <link rel="icon" type="image/svg+xml" href="/logo.svg">
@@ -367,7 +368,7 @@ html.home-page body,html.legal-page body{overflow-y:auto;height:auto;min-height:
         </button>
         <button class="media-modal-tab" data-media-tab="moviebox">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V4h-4z"/></svg>
-          MovieBox
+          Cinema
           <span class="mb-tab-badge">New</span>
         </button>
       </div>
@@ -382,52 +383,7 @@ html.home-page body,html.legal-page body{overflow-y:auto;height:auto;min-height:
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         Supports YouTube, MP4, HLS (m3u8), Google Drive, Vimeo, Dailymotion, direct audio, Spotify, SoundCloud and more
       </div>
-      <!-- ── Stream Embed Engine ──────────────────────────── -->
-      <div id="streamEmbedSection">
-        <p class="ott-section-title">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="13" height="13" style="display:inline;vertical-align:middle;margin-right:5px;color:#C7B8FF"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
-          Stream Embed
-        </p>
 
-        <div class="se-tabs">
-          <button class="se-tab active" data-se-tab="seImdbPanel">Netflix · Prime · Hotstar</button>
-          <button class="se-tab" data-se-tab="seAnimePanel">Anime / Crunchyroll</button>
-        </div>
-
-        <!-- IMDb / TMDB → embed -->
-        <div class="se-panel" id="seImdbPanel">
-          <div id="seOttWarning" class="se-ott-warning" style="display:none"></div>
-          <div class="se-input-row">
-            <input type="text" id="seOttInput" class="input-field" placeholder="tt0944947 or Netflix URL…" autocomplete="off" autocorrect="off" spellcheck="false">
-            <select id="seContentType" class="se-select">
-              <option value="movie">Movie</option>
-              <option value="tv">TV Show</option>
-            </select>
-          </div>
-          <div class="se-tv-row" id="seTvRow">
-            <input type="number" id="seSeason"  class="input-field se-ep" placeholder="Season" min="1" value="1">
-            <input type="number" id="seEpisode" class="input-field se-ep" placeholder="Ep"     min="1" value="1">
-          </div>
-          <button class="btn btn-primary se-load-btn" id="seLoadOttBtn">Load Embed</button>
-        </div>
-
-        <!-- Anime search → embed -->
-        <div class="se-panel" id="seAnimePanel" style="display:none">
-          <div class="se-input-row">
-            <input type="text" id="seAnimeQuery" class="input-field" placeholder="e.g. Attack on Titan…" autocomplete="off">
-            <button class="btn btn-secondary se-search-btn" id="seAnimeSearchBtn">Search</button>
-          </div>
-          <div id="seAnimeResults" class="se-anime-results"></div>
-          <div id="seAnimeEpSection" class="se-anime-ep-section" style="display:none">
-            <div class="se-ep-header">
-              <button class="se-back-btn" id="seAnimeBackBtn">← Back</button>
-              <span class="se-ep-title" id="seAnimeEpTitle"></span>
-            </div>
-            <div class="se-ep-grid" id="seAnimeEpGrid"></div>
-          </div>
-        </div>
-      </div>
-      <!-- ────────────────────────────────────────────────── -->
       </div><!-- /mediaPanelDirectUrl -->
 
       <!-- ── Panel 2: MovieBox Discovery ─────────────────────── -->
@@ -762,5 +718,6 @@ if (gateInput && gateCount) {
 }
 </script>
 <script type="module" src="./script.js"></script>
+<script type="module" src="./keyboard.js"></script>
 </body>
 </html>

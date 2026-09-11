@@ -1,15 +1,23 @@
 services:
+  sync:
+    image: node:22-slim
+    working_dir: /srv
+    volumes:
+      - ./server:/srv
+      - sync_node_modules:/srv/node_modules
+    command: sh -c "npm install --no-fund --no-audit && node sync-server.mjs"
+    restart: unless-stopped
+
   web:
     image: node:22-slim
     working_dir: /app
+    depends_on:
+      - sync
     volumes:
       - ./:/app
       - node_modules:/app/node_modules
     ports:
       - "3000:5000"
-    env_file:
-      - ./.env.base44-defaults
-      - /run/base44/app.env
     environment:
       - __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS
     command: sh -c "corepack enable pnpm && pnpm install --frozen-lockfile && pnpm run dev"
@@ -17,3 +25,4 @@ services:
 
 volumes:
   node_modules:
+  sync_node_modules:

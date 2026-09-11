@@ -1,0 +1,182 @@
+/* ============================================================
+   WOTCHLY — Ultra-Luxury Layer (loaded after style.css)
+   Aurora ambience · champagne gold + violet · deep glass
+   ============================================================ */
+
+/* ---- Display font for headlines ---- */
+:root {
+  --font-display: 'Sora', 'Inter', system-ui, sans-serif;
+  --gold: #f5d491;
+  --gold-deep: #d4a94e;
+  --lux-gradient: linear-gradient(120deg, #f5d491 0%, #e8b4b8 38%, #b48ce0 72%, #7dd8e8 100%);
+}
+
+/* ---- Aurora ambience behind everything ---- */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(48rem 30rem at 12% -8%, rgba(157, 78, 221, 0.16), transparent 60%),
+    radial-gradient(42rem 28rem at 108% 12%, rgba(245, 212, 145, 0.10), transparent 60%),
+    radial-gradient(38rem 30rem at 50% 118%, rgba(0, 180, 216, 0.10), transparent 60%);
+}
+[data-theme="light"] body::after {
+  background:
+    radial-gradient(48rem 30rem at 12% -8%, rgba(157, 78, 221, 0.08), transparent 60%),
+    radial-gradient(42rem 28rem at 108% 12%, rgba(212, 169, 78, 0.08), transparent 60%);
+}
+
+/* ---- Headline typography ---- */
+h1, h2, h3, .modal-title, .panel-header span, .gate-title {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+/* ---- Room header: frosted gold-trimmed bar ---- */
+.room-header {
+  background: linear-gradient(180deg, rgba(16, 16, 26, 0.92), rgba(10, 10, 18, 0.86)) !important;
+  backdrop-filter: blur(18px) saturate(1.4);
+  border-bottom: 1px solid rgba(245, 212, 145, 0.14);
+  box-shadow: 0 1px 0 rgba(245, 212, 145, 0.05), 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+[data-theme="light"] .room-header {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(250, 249, 255, 0.9)) !important;
+  border-bottom-color: rgba(212, 169, 78, 0.22);
+}
+
+/* ---- Panels: deep glass with hairline gradient edge ---- */
+.panel {
+  background: linear-gradient(180deg, rgba(18, 18, 30, 0.94), rgba(13, 13, 22, 0.94)) !important;
+  border: 1px solid rgba(199, 184, 255, 0.10) !important;
+  border-radius: var(--r-xl) !important;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(14px);
+}
+[data-theme="light"] .panel {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(252, 251, 254, 0.95)) !important;
+  border-color: rgba(157, 78, 221, 0.10) !important;
+  box-shadow: 0 18px 44px rgba(120, 100, 180, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.panel-header {
+  border-bottom: 1px solid rgba(245, 212, 145, 0.10) !important;
+  background: linear-gradient(90deg, rgba(245, 212, 145, 0.05), transparent 55%) !important;
+}
+
+/* ---- Primary buttons: champagne glow ---- */
+.btn-primary, .create-btn, .chat-action-btn.send-action-btn {
+  background: linear-gradient(135deg, #f5d491 0%, #d9a8ff 52%, #8f7bf0 100%) !important;
+  color: #17121f !important;
+  font-weight: 700 !important;
+  border: none !important;
+  box-shadow: 0 6px 22px rgba(217, 168, 255, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
+  transition: transform 0.18s var(--ease-out, ease), box-shadow 0.18s ease;
+}
+.btn-primary:hover, .create-btn:hover, .chat-action-btn.send-action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 30px rgba(217, 168, 255, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+.chat-action-btn.send-action-btn { color: #17121f !important; }
+
+/* ---- Modal: floating glass slab ---- */
+.modal {
+  background: linear-gradient(165deg, rgba(20, 20, 34, 0.97), rgba(12, 12, 22, 0.98)) !important;
+  border: 1px solid rgba(199, 184, 255, 0.14) !important;
+  border-radius: var(--r-2xl) !important;
+  box-shadow: 0 40px 90px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(245, 212, 145, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(24px) saturate(1.4);
+}
+[data-theme="light"] .modal {
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.98), rgba(250, 249, 255, 0.98)) !important;
+  box-shadow: 0 40px 90px rgba(90, 70, 150, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.7) !important;
+}
+.modal-title {
+  background: var(--lux-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ---- Tabs & pills: luxurious active state ---- */
+.media-modal-tab.active, .se-tab.active, .mb-pill.active, .hcp-swatch.active {
+  box-shadow: 0 0 0 1px rgba(245, 212, 145, 0.35), 0 4px 16px rgba(217, 168, 255, 0.25);
+}
+.media-modal-tab.active::after, .mb-pill.active {
+  background: linear-gradient(135deg, rgba(245, 212, 145, 0.16), rgba(217, 168, 255, 0.16)) !important;
+}
+
+/* ---- Inputs: soft focus ring ---- */
+.input-field:focus {
+  border-color: rgba(245, 212, 145, 0.45) !important;
+  box-shadow: 0 0 0 3px rgba(245, 212, 145, 0.12) !important;
+}
+
+/* ---- Video area: cinematic vignette ---- */
+.video-container {
+  box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.35), 0 10px 36px rgba(0, 0, 0, 0.4);
+}
+
+/* ---- Chat bubbles: refined ---- */
+.chat-message {
+  border-radius: 12px !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
+/* ---- Host control panel: gold crown treatment ---- */
+.host-control-panel, #hostControlPanel {
+  border: 1px solid rgba(245, 212, 145, 0.18) !important;
+}
+
+/* ============================================================
+   KEYBOARD HANDLING — video stays visible, chat condenses
+   ============================================================ */
+:root { --vvh: 100dvh; --vv-offset-top: 0px; }
+
+body.keyboard-open {
+  /* Pin the whole app to the visible viewport (not the layout viewport) */
+  height: var(--vvh) !important;
+}
+body.keyboard-open .room-wrapper {
+  height: var(--vvh) !important;
+  transform: translateY(var(--vv-offset-top));
+}
+body.keyboard-open html, html:has(body.keyboard-open) {
+  height: var(--vvh) !important;
+}
+
+/* Video keeps a guaranteed share of the visible area */
+body.keyboard-open .video-container {
+  max-height: calc(var(--vvh) * 0.52) !important;
+  min-height: calc(var(--vvh) * 0.3);
+}
+
+/* Chat condenses: messages shrink, input stays above the keyboard */
+body.keyboard-open .chat-messages {
+  flex: 1 1 auto;
+  min-height: 3.4rem;
+  max-height: 34%;
+}
+body.keyboard-open .panel-header,
+body.keyboard-open .user-list {
+  display: none !important; /* make room for the video */
+}
+body.keyboard-open .panel-chat {
+  display: flex !important;
+  flex-direction: column;
+}
+
+/* Landscape with keyboard: split — video left, chat right */
+@media (orientation: landscape) {
+  body.keyboard-open .room-wrapper { height: var(--vvh) !important; }
+  body.keyboard-open .video-container { max-height: var(--vvh) !important; }
+}
+
+/* Ensure the on-screen input is never covered by the keyboard */
+body.keyboard-open .chat-input-bar {
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(180deg, transparent, rgba(10, 10, 18, 0.6) 30%);
+  backdrop-filter: blur(10px);
+}

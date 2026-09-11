@@ -12,9 +12,9 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-import { db, ref, set, get, push, update, remove, onValue, onDisconnect } from './firebase.js';
+import { db, ref, set, get, push, update, remove, onValue, onDisconnect } from './sync.js';
+import { fetchCatalogFeed, loadCatalogStream } from './catalog.js';
 import Hls from 'hls.js';
-import { searchAnime, getAnimeEpisodes, getAnimeStreamUrl, resolveOttEmbed, resolveAnimeMovieUrl, extractTitleFromOttUrl, EMBED_PROVIDERS, DEFAULT_PROVIDER } from './streamResolver.js';
 
 // ---- URL params ----
 const urlParams = new URLSearchParams(window.location.search);
@@ -1092,114 +1092,14 @@ async function createVideoPlayer(url) {
     return;
   }
 
-  // ---- Crunchyroll — DRM-protected, iframe blocked ----
-  if (type === 'website' && url.includes('crunchyroll.com')) {
-    // Try to extract show title from URL path: /watch/XXXX/show-title-here
-    let animeName = '';
-    try {
-      const pathParts = new URL(url).pathname.split('/').filter(Boolean);
-      // Crunchyroll URLs: /watch/<id>/<slug>  or  /series/<id>/<slug>
-      const slugIdx = pathParts.findIndex(p => p === 'watch' || p === 'series');
-      if (slugIdx !== -1 && pathParts[slugIdx + 2]) {
-        animeName = pathParts[slugIdx + 2].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-      } else if (slugIdx !== -1 && pathParts[slugIdx + 1]) {
-        animeName = pathParts[slugIdx + 1].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-      }
-    } catch { /* ignore */ }
-
-    // Pre-fill the Stream Engine anime search and open it
-    const seAnimeQuery = document.getElementById('seAnimeQuery');
-    const videoModal = document.getElementById('videoModal');
-    const seAnimePanelTab = document.querySelector('.se-tab[data-se-tab="seAnimePanel"]');
-    const seAnimePanel = document.getElementById('seAnimePanel');
-    const seImdbPanel = document.getElementById('seImdbPanel');
-
-    if (animeName && seAnimeQuery) seAnimeQuery.value = animeName;
-    if (videoModal) videoModal.classList.add('active');
-    // Switch to Anime tab
-    document.querySelectorAll('.se-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.se-panel').forEach(p => (p.style.display = 'none'));
-    if (seAnimePanelTab) seAnimePanelTab.classList.add('active');
-    if (seAnimePanel) seAnimePanel.style.display = 'block';
-
-    showNotification(
-      animeName
-        ? `Crunchyroll uses DRM — searching "${animeName}" in Anime tab`
-        : 'Crunchyroll uses DRM — use the Anime tab to search',
-      'error'
-    );
-
-    // Show a placeholder so the video area is not blank
-    const videoContainer = document.getElementById('videoContainer');
-    const placeholder = document.getElementById('videoPlaceholder');
-    if (videoContainer) {
-      videoContainer.innerHTML = '';
-      if (placeholder) { videoContainer.appendChild(placeholder); placeholder.style.display = 'flex'; }
-    }
-    return;
-  }
-
   // ---- Website / Browser iframe ----
   if (type === 'website') {
     const OTT = ['netflix.com','primevideo.com','amazon.com/primevideo','jiohotstar.com','hotstar.com','disneyplus.com','disney.com/disneyplus'];
-    const isOTT = OTT.some(d => url.includes(d));
-    if (isOTT) {
-      // Use whichever provider is currently selected in the Stream Engine UI
-      const selectedBase = _getSelectedProviderBase();
-      const resolved = resolveOttEmbed(url, 'movie', null, null, selectedBase);
-      if (resolved) {
-        // Sync any params already baked into resolved URL; then apply saved preferences
-        const incomingOtt = _parseEmbedParamsFromUrl(resolved.url);
-        if (incomingOtt.audio) { currentEmbedLang    = incomingOtt.audio; localStorage.setItem('wotchly_embed_lang',     incomingOtt.audio); }
-        if (incomingOtt.sub)   { currentEmbedSubLang = incomingOtt.sub;   localStorage.setItem('wotchly_embed_sub_lang', incomingOtt.sub);   }
-        const ottSrc = (currentEmbedLang || currentEmbedSubLang)
-          ? _applyEmbedParams(resolved.url, currentEmbedLang, currentEmbedSubLang) : resolved.url;
-        currentVideoType = 'embed';
-        currentVideoUrl = ottSrc;
-        const iframe = document.createElement('iframe');
-        iframe.id = 'ottEmbedFrame';
-        iframe.src = ottSrc;
-        iframe.style.cssText = 'width:100%;height:100%;border:none;position:absolute;top:0;left:0;background:#000;';
-        iframe.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media';
-        iframe.allowFullscreen = true;
-        videoContainer.appendChild(iframe);
-        videoContainer.classList.add('iframe-mode');
-        // Guests: apply pendingInitialSync after the embed player initialises.
-        if (!isHost) {
-          iframe.addEventListener('load', () => {
-            setTimeout(() => {
-              if (!pendingInitialSync) return;
-              const target = computeSyncTarget(pendingInitialSync);
-              sendIframeCommand('seek', target);
-              embedCurrentOffset = target;
-              if (pendingInitialSync.playState === 'playing') {
-                isManuallyPaused = false;
-                sendIframeCommand('play');
-                embedPlayStartTime = Date.now();
-              }
-              pendingInitialSync = null;
-            }, 1500);
-          });
-        }
-        startEmbedTimeUpdater();
-        showNotification(`Stream loading via ${resolved.provider} — for TV series use Stream Engine`, 'info');
-        updateModeIndicator('player', 'embed');
-        populateEmbedLangSelector();
-      } else {
-        // Fallback: show placeholder with hint
-        videoContainer.innerHTML = `
-          <div class="browser-placeholder">
-            <div class="browser-placeholder-icon">&#127916;</div>
-            <h3>Use Stream Engine</h3>
-            <p>Paste the IMDb ID or use the Stream Embed section below to load this title.</p>
-            <p class="ott-url">${escapeHtml(url)}</p>
-          </div>`;
-        showNotification('Use the Stream Engine to load OTT titles', 'info');
-        updateModeIndicator('browser', 'website');
-        currentMode = 'browser';
-      }
-      return;
-    } else {
+    if (OTT.some(d => url.includes(d))) {
+      showNotification('This platform blocks embedding (DRM). Use the Cinema tab or paste a direct video URL.', 'info');
+    }
+    {
+
       const wrapper = document.createElement('div');
       wrapper.className = 'browser-iframe-wrapper';
       const iframe = createBrowserIframe(url);
@@ -1368,11 +1268,6 @@ async function loadSharedContent(url) {
 // Public Render API base URL. Render builds need to call this directly;
 // Netlify deployments can still fall back to the server-side function when it
 // is not configured. Never assume the hosting platform from import.meta.env.DEV.
-const RENDER_API_BASE = (() => {
-  const raw = 'https://moviebox-internal-api.onrender.com';
-  if (!raw) return '';
-  return `${/^https?:\/\//i.test(raw) ? '' : 'https://'}${raw}`.replace(/\/$/, '');
-})();
 
 
 // Gradient palette for dynamically-rendered cards that have no cover image.
@@ -1514,139 +1409,21 @@ function _inferCat(item) {
  *   'unknown'       – anything else
  */
 async function fetchMovieBoxFeed(category = 'trending', query = '') {
-  const routeMap = {
-    trending: 'trending', movie: 'movies', movies: 'movies', tv: 'tv',
-    anime: 'anime', midnight: 'midnight', 'short drama': 'short-drama',
-    serials: 'serials', bollywood: 'bollywood', hindi: 'hindi',
-    south: 'south', korean: 'korean', web: 'web-series', drama: 'drama',
-  };
-  const route = routeMap[String(category).toLowerCase()] || String(category).toLowerCase();
-  const directUrl = query
-    ? `${RENDER_API_BASE}/search?q=${encodeURIComponent(query)}`
-    : `${RENDER_API_BASE}/${route}`;
-  const proxyUrl = query
-    ? `/.netlify/functions/get-feed?q=${encodeURIComponent(query)}`
-    : `/.netlify/functions/get-feed?category=${encodeURIComponent(category)}`;
-  // Use the same-origin Netlify function first. Direct browser calls to Render
-  // are not CORS-safe on the production Netlify deployment. The direct URL is
-  // retained only as a fallback for the static/non-Netlify deployment.
-  const urls = [proxyUrl, directUrl];
-  let url = urls[0];
-
-  let resp;
-  let lastError;
-  for (const candidateUrl of urls) {
-    url = candidateUrl;
-    try {
-      resp = await fetch(candidateUrl, {
-        headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(28000),
-      });
-      if (resp.ok) break;
-      lastError = new Error(`HTTP ${resp.status}`);
-    } catch (err) {
-      lastError = err;
-    }
+  // Wotchly Cinema — built-in legal catalog (public domain + CC), no external API.
+  try {
+    return await fetchCatalogFeed(category, query);
+  } catch {
+    return { items: [], errorType: 'unknown', status: null };
   }
-  if (!resp?.ok) {
-    const errorType = (lastError?.name === 'TimeoutError' || lastError?.name === 'AbortError') ? 'timeout' : 'network';
-    console.warn(`[MovieBox] Fetch failed (${errorType}):`, lastError?.message);
-    return { items: null, errorType, status: resp?.status || null };
-  }
-
-  let json;
-  try { json = await resp.json(); } catch {
-    return { items: null, errorType: 'unknown', status: resp.status };
-  }
-
-  // Render adapters and the official BFF use several nested envelopes. Walk
-  // the response and flatten section objects such as { list: [{ items: [] }] }.
-  function collect(value, depth = 0) {
-    if (!value || depth > 6) return [];
-    if (Array.isArray(value)) {
-      return value.flatMap(entry => {
-        if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
-          const nested = entry.items || entry.list || entry.results || entry.content;
-          return Array.isArray(nested) ? collect(nested, depth + 1) : [entry];
-        }
-        return [entry];
-      });
-    }
-    if (typeof value === 'object') {
-      for (const key of ['results', 'items', 'list', 'movies', 'shows', 'content', 'response', 'data']) {
-        if (value[key] !== undefined) {
-          const found = collect(value[key], depth + 1);
-          if (found.length) return found;
-        }
-      }
-    }
-    return [];
-  }
-  let raw = collect(json);
-  if (!raw) {
-    // Unknown upstream response shape; surface it as a real API failure.
-    console.warn('[MovieBox] Unexpected response shape from server:', JSON.stringify(json).slice(0, 150));
-    return { items: [], errorType: 'unknown', status: resp.status };
-  }
-
-  const items = raw.map(item => ({
-    id:       item.subjectId || item.subject_id || item.id || item.slug || String(item._id || ''),
-    title:    item.title || item.name || '',
-    year:     item.year  || item.release_year || item.releaseTime || '',
-    lang:     item.lang  || item.language     || item.original_language || '',
-    rating:   item.rating ?? item.score ?? item.vote_average ?? '',
-    cover:    item.cover || item.thumbnail || item.image || item.poster || item.img
-                ? (item.cover || item.thumbnail || item.image || item.poster || item.img)
-                : item.poster_path
-                  ? `https://image.tmdb.org/t/p/w300${item.poster_path}`
-                  : item.backdrop_path
-                    ? `https://image.tmdb.org/t/p/w300${item.backdrop_path}`
-                    : '',
-    type:     item.type  || item.media_type || (item.subjectType === 1 ? 'movie' : item.subjectType === 2 ? 'tv' : ''),
-    cat:      _inferCat(item),
-    gradient: item.gradient || '',
-  })).filter(item => {
-    if (!item.id || !item.title) return false;
-    // Drop music/song items — they can't be streamed as video
-    const t = (item.type || '').toLowerCase();
-    return !['music', 'song', 'audio', 'mv', 'music_video', 'musicvideo'].includes(t);
-  });
-
-  return { items, errorType: null, status: 200 };
 }
 
 async function loadMovieBoxStream(movieId) {
-  const directUrl = `${RENDER_API_BASE}/stream/${encodeURIComponent(movieId)}`;
-  const proxyUrl = `/.netlify/functions/get-stream?id=${encodeURIComponent(movieId)}`;
-  let resp = null;
-  for (const candidateUrl of [proxyUrl, directUrl]) {
-    try {
-      resp = await fetch(candidateUrl, {
-        headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(28000),
-      });
-      if (resp.ok) break;
-    } catch {
-      resp = null;
-    }
-  }
-  if (!resp || !resp.ok) {
-    showNotification('MovieBox: server unreachable', 'error');
-    return null;
-  }
-
-  if (!resp.ok) {
-    showNotification(`MovieBox: server error (${resp.status})`, 'error');
-    return null;
-  }
-
-  const data = await resp.json().catch(() => null);
-  const streamUrl = data?.stream_url || data?.url;
+  // Instant, local resolution from the built-in catalog.
+  const streamUrl = await loadCatalogStream(movieId);
   if (!streamUrl) {
-    showNotification('MovieBox: response did not contain a stream URL', 'error');
+    showNotification('Cinema: title not found', 'error');
     return null;
   }
-
   return streamUrl;
 }
 
@@ -1659,7 +1436,7 @@ async function selectMovieBoxTitle(movieId) {
   if (!isHost) { showNotification('Only the host can select media', 'info'); return; }
 
   document.getElementById('videoModal')?.classList.remove('active');
-  showNotification('Loading from MovieBox…', 'info');
+  showNotification('Loading from Cinema…', 'info');
 
   // Write only the ID — each client fetches their own stream URL independently
   // via listenToRoom so the actual streaming link never travels through Firebase
@@ -1770,13 +1547,9 @@ function initMovieBoxUI() {
   let _searchTimer;
   const MAX_RETRIES  = 5;
 
-  // Silent wake-ping so Render server is warm before real requests arrive.
-  // Also called immediately on init so the server starts waking on page load.
-  function _wakePing() {
-    fetch('/.netlify/functions/get-feed?category=trending', { signal: AbortSignal.timeout(30000) })
-      .catch(() => {/* ignore — just warming the server */});
-  }
-  _wakePing(); // fire immediately on page load to pre-warm Render
+  // Catalog is local — nothing to wake up server-side anymore.
+  function _wakePing() {}
+  _wakePing();
 
   // ── Skeleton helpers ────────────────────────────────────────
   function _skRow(el, n = 5) {
@@ -2229,6 +2002,13 @@ function _detectHlsTracks() {
   if (audioTracks.length > 1 || subTracks.length > 0) {
     currentAudioTrackId = hlsInstance.audioTrack >= 0 ? hlsInstance.audioTrack : 0;
     currentSubtitleTrackId = -1;
+    // Auto-select the preferred audio language (Hindi by default) when available.
+    const preferred = (localStorage.getItem('wotchly_embed_lang') || 'hi').toLowerCase();
+    const preferredIdx = audioTracks.findIndex(t => (t.lang || '').toLowerCase().startsWith(preferred));
+    if (preferredIdx >= 0 && hlsInstance.audioTrack !== preferredIdx) {
+      try { hlsInstance.audioTrack = preferredIdx; } catch {}
+      currentAudioTrackId = preferredIdx;
+    }
     populateLangSelector(audioTracks, subTracks);
   }
 }
@@ -3170,22 +2950,10 @@ function listenToRoom() {
     // We use a monotonic version token so only the most-recent selection's
     // async result is committed; every earlier in-flight load is discarded.
     if (data.currentMovieId && data.currentMovieId !== currentMovieId) {
-      const requestedId   = data.currentMovieId;
-      const myVersion     = ++_movieLoadVersion; // grab before any await
+      const requestedId = data.currentMovieId;
+      const myVersion   = ++_movieLoadVersion; // guard against rapid selection changes
 
-      // Auto-retry stream fetch — Render may be cold-starting (~30s).
-      // Each attempt waits 5s before retrying; give up after 4 tries.
-      let streamUrl = null;
-      for (let attempt = 0; attempt < 4; attempt++) {
-        if (_movieLoadVersion !== myVersion) break; // newer selection arrived
-        if (attempt > 0) {
-          showNotification(`MovieBox: server waking up, retry ${attempt}/3…`, 'info');
-          await new Promise(r => setTimeout(r, 5000));
-        }
-        if (_movieLoadVersion !== myVersion) break;
-        streamUrl = await loadMovieBoxStream(requestedId);
-        if (streamUrl) break;
-      }
+      const streamUrl = await loadMovieBoxStream(requestedId);
 
       // If a newer selection arrived while we were fetching, discard this result.
       if (_movieLoadVersion !== myVersion) { /* stale — newer version won */ }
@@ -4258,7 +4026,6 @@ function initRoom() {
   initLandscapeHandler();
 
   // --- Stream Engine (OTT embed + Anime/Crunchyroll) ---
-  initStreamEngine();
 
   // --- MovieBox Discovery UI ---
   initMovieBoxUI();
@@ -4319,277 +4086,6 @@ function applyTheme(theme) {
   if (tt) tt.setAttribute('aria-pressed', theme === 'light' ? 'true' : 'false');
   const ttg = document.getElementById('themeToggleGate');
   if (ttg) ttg.setAttribute('aria-pressed', theme === 'light' ? 'true' : 'false');
-}
-
-// ============================================================
-// STREAM ENGINE  (OTT Embed + Anime/Crunchyroll via Consumet)
-// ============================================================
-
-// Helper: read the provider dropdown and return the selected provider's base URL
-function _getSelectedProviderBase() {
-  const sel = document.getElementById('seProvider');
-  if (!sel) return DEFAULT_PROVIDER.base;
-  const found = EMBED_PROVIDERS.find(p => p.id === sel.value);
-  return found ? found.base : DEFAULT_PROVIDER.base;
-}
-
-function initStreamEngine() {
-  // ── Tab switcher ────────────────────────────────────────────
-  const seTabs = document.querySelectorAll('.se-tab');
-  seTabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      seTabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      document.querySelectorAll('.se-panel').forEach(p => (p.style.display = 'none'));
-      const target = document.getElementById(tab.dataset.seTab);
-      if (target) target.style.display = 'block';
-    });
-  });
-
-  // ── IMDb / TMDB → vidsrc embed ──────────────────────────────
-  const seContentType = document.getElementById('seContentType');
-  const seTvRow = document.getElementById('seTvRow');
-  if (seContentType && seTvRow) {
-    seContentType.addEventListener('change', () => {
-      seTvRow.style.display = seContentType.value === 'tv' ? 'flex' : 'none';
-    });
-  }
-
-  const seLoadOttBtn = document.getElementById('seLoadOttBtn');
-  const seOttWarning = document.getElementById('seOttWarning');
-
-  // Live: detect OTT URL vs IMDb ID and show warning
-  const seOttInput = document.getElementById('seOttInput');
-  if (seOttInput && seOttWarning) {
-    seOttInput.addEventListener('input', () => {
-      const val = seOttInput.value.trim();
-      const platformDomains = ['hotstar.com','jiohotstar.com','netflix.com','primevideo.com','amazon.com','disneyplus.com'];
-      const isPlatformUrl = val.startsWith('http') && platformDomains.some(d => val.includes(d));
-      const isImdbId = /^tt\d{5,10}$/i.test(val);
-      const isTmdbId = /^\d{4,8}$/.test(val);
-      if (isPlatformUrl && !isImdbId) {
-        const title = extractTitleFromOttUrl(val);
-        const titleHint = title ? ` (detected: "<strong>${title}</strong>")` : '';
-        seOttWarning.innerHTML = `⚠️ Platform URL detected${titleHint}. For reliable playback, find this title's IMDb ID on <a href="https://www.imdb.com/find?q=${encodeURIComponent(title||val)}" target="_blank" rel="noopener">imdb.com</a> and paste the <code>tt…</code> ID instead.`;
-        seOttWarning.style.display = 'block';
-      } else if (isImdbId || isTmdbId || val === '') {
-        seOttWarning.style.display = 'none';
-      }
-    });
-  }
-
-  if (seLoadOttBtn) {
-    seLoadOttBtn.addEventListener('click', async () => {
-      if (!isHost) { showNotification('Only the host can load media', 'error'); return; }
-      const input = seOttInput?.value.trim();
-      if (!input) { showNotification('Enter an IMDb ID or OTT URL', 'error'); return; }
-
-      const type = seContentType?.value || 'movie';
-      const season  = type === 'tv' ? parseInt(document.getElementById('seSeason')?.value  || '1', 10) : null;
-      const episode = type === 'tv' ? parseInt(document.getElementById('seEpisode')?.value || '1', 10) : null;
-      const providerBase = _getSelectedProviderBase();
-
-      const resolved = resolveOttEmbed(input, type, season, episode, providerBase);
-      if (!resolved) {
-        showNotification('Could not resolve — try an IMDb ID (tt…) or direct Netflix/Prime/Hotstar URL', 'error');
-        return;
-      }
-
-      // Apply selected audio + subtitle language to the embed URL before loading
-      const ottFinalUrl = (currentEmbedLang || currentEmbedSubLang)
-        ? _applyEmbedParams(resolved.url, currentEmbedLang, currentEmbedSubLang) : resolved.url;
-
-      seLoadOttBtn.textContent = 'Loading…';
-      seLoadOttBtn.disabled = true;
-      try {
-        document.getElementById('videoModal')?.classList.remove('active');
-        await loadSharedContent(ottFinalUrl);
-        await updateFirebaseState('paused', 0, ottFinalUrl);
-        showNotification(`Stream loading — ${resolved.note}`, 'success');
-      } finally {
-        seLoadOttBtn.textContent = 'Load Embed';
-        seLoadOttBtn.disabled = false;
-      }
-    });
-  }
-
-  // ── Anime search via Consumet ───────────────────────────────
-  let selectedAnimeId = null;
-  let selectedAnimeTitle = '';
-
-  const seAnimeSearchBtn = document.getElementById('seAnimeSearchBtn');
-  const seAnimeQuery    = document.getElementById('seAnimeQuery');
-  const seAnimeResults  = document.getElementById('seAnimeResults');
-  const seAnimeEpSection = document.getElementById('seAnimeEpSection');
-  const seAnimeEpGrid   = document.getElementById('seAnimeEpGrid');
-  const seAnimeBackBtn  = document.getElementById('seAnimeBackBtn');
-  const seAnimeEpTitle  = document.getElementById('seAnimeEpTitle');
-
-  async function runAnimeSearch() {
-    if (!isHost) { showNotification('Only the host can load media', 'error'); return; }
-    const q = seAnimeQuery?.value.trim();
-    if (!q) { showNotification('Enter an anime title', 'error'); return; }
-
-    if (seAnimeSearchBtn) { seAnimeSearchBtn.textContent = '…'; seAnimeSearchBtn.disabled = true; }
-    if (seAnimeResults) seAnimeResults.innerHTML = '<p class="se-searching">Searching…</p>';
-    if (seAnimeEpSection) seAnimeEpSection.style.display = 'none';
-
-    try {
-      const results = await searchAnime(q);
-      if (!seAnimeResults) return;
-      if (!results.length) {
-        seAnimeResults.innerHTML = '<p class="se-no-results">No results found. Try a different title.</p>';
-        return;
-      }
-      seAnimeResults.innerHTML = '';
-      results.slice(0, 8).forEach(r => {
-        const item = document.createElement('div');
-        item.className = 'se-anime-result';
-        const badge = r.isMovie
-          ? '<span class="se-anime-badge se-anime-badge-movie">MOVIE</span>'
-          : (r.totalEpisodes ? `<span class="se-anime-badge">${r.totalEpisodes} eps</span>` : '');
-        item.innerHTML = `
-          ${r.image ? `<img src="${escapeHtml(r.image)}" alt="" class="se-anime-thumb" loading="lazy">` : '<div class="se-anime-thumb se-anime-thumb-placeholder"></div>'}
-          <div class="se-anime-info">
-            <span class="se-anime-name">${escapeHtml(r.title)}</span>
-            ${badge}
-          </div>
-        `;
-        item.style.cursor = 'pointer';
-        item.addEventListener('click', () => {
-          if (r.isMovie) {
-            streamAnimeMovie(r.idMal, r.id, r.title);
-          } else {
-            loadAnimeEpisodes(r.id, r.title);
-          }
-        });
-        seAnimeResults.appendChild(item);
-      });
-    } catch {
-      if (seAnimeResults) seAnimeResults.innerHTML = '<p class="se-no-results">Search failed — check your connection.</p>';
-    } finally {
-      if (seAnimeSearchBtn) { seAnimeSearchBtn.textContent = 'Search'; seAnimeSearchBtn.disabled = false; }
-    }
-  }
-
-  async function loadAnimeEpisodes(animeId, title) {
-    selectedAnimeId = animeId;
-    selectedAnimeTitle = title;
-    if (seAnimeResults) seAnimeResults.innerHTML = '';
-    if (seAnimeEpSection) seAnimeEpSection.style.display = 'block';
-    if (seAnimeEpTitle) seAnimeEpTitle.textContent = title;
-    if (seAnimeEpGrid) seAnimeEpGrid.innerHTML = '<p class="se-searching">Loading episodes…</p>';
-
-    try {
-      const eps = await getAnimeEpisodes(animeId);
-      if (!seAnimeEpGrid) return;
-      if (!eps.length) {
-        seAnimeEpGrid.innerHTML = '<p class="se-no-results">No episodes found.</p>';
-        return;
-      }
-      seAnimeEpGrid.innerHTML = '';
-      eps.forEach(ep => {
-        const btn = document.createElement('button');
-        btn.className = 'se-ep-btn';
-        btn.textContent = `Ep ${ep.number}`;
-        btn.addEventListener('click', () => streamAnimeEpisode(ep.id, ep.number));
-        seAnimeEpGrid.appendChild(btn);
-      });
-    } catch {
-      if (seAnimeEpGrid) seAnimeEpGrid.innerHTML = '<p class="se-no-results">Failed to load episodes.</p>';
-    }
-  }
-
-  async function streamAnimeEpisode(episodeId, epNumber) {
-    if (!isHost) { showNotification('Only the host can load media', 'error'); return; }
-    showNotification(`Loading Ep ${epNumber}…`, 'info');
-
-    // Reset provider index so retry cycles start from current provider
-    _currentProviderIdx = EMBED_PROVIDERS.findIndex(p => p.base === _getSelectedProviderBase());
-    if (_currentProviderIdx < 0) _currentProviderIdx = 0;
-
-    const providerBase = _getSelectedProviderBase();
-    const embedUrl = await getAnimeStreamUrl(episodeId, providerBase);
-    if (!embedUrl) {
-      showNotification('Could not find this episode — try a different provider or search by IMDb ID in the OTT tab', 'error');
-      return;
-    }
-
-    // Default to Hindi dub if no explicit preference set
-    const langToApply = currentEmbedLang || 'hi';
-    if (!localStorage.getItem('wotchly_embed_lang')) {
-      currentEmbedLang = 'hi';
-      localStorage.setItem('wotchly_embed_lang', 'hi');
-    }
-
-    const finalUrl = _applyEmbedParams(embedUrl, langToApply, currentEmbedSubLang);
-
-    // Track for retry
-    _lastAnimeLoad = { type: 'episode', episodeId, epNumber, title: selectedAnimeTitle };
-
-    document.getElementById('videoModal')?.classList.remove('active');
-    // Route through loadSharedContent so detectVideoType('embed') picks it up cleanly
-    await loadSharedContent(finalUrl);
-    await updateFirebaseState('paused', 0, finalUrl);
-    const langName = langToApply === 'hi' ? 'Hindi dub' : langToApply.toUpperCase();
-    showNotification(`${escapeHtml(selectedAnimeTitle)} Ep ${epNumber} — stream loading (${langName})`, 'success');
-    // Show retry bar so host can switch provider if Hindi isn't available
-    setTimeout(_showDubRetryBar, 1200);
-  }
-
-  // Anime movies (format: MOVIE) — look up real IMDb/TMDB ID via ani.zip, then embed
-  async function streamAnimeMovie(malId, anilistId, title) {
-    if (!isHost) { showNotification('Only the host can load media', 'error'); return; }
-    showNotification(`Looking up "${title}"…`, 'info');
-
-    // Reset provider index for retry cycling
-    _currentProviderIdx = EMBED_PROVIDERS.findIndex(p => p.base === _getSelectedProviderBase());
-    if (_currentProviderIdx < 0) _currentProviderIdx = 0;
-
-    const providerBase = _getSelectedProviderBase();
-    const result = await resolveAnimeMovieUrl(malId, anilistId, providerBase);
-
-    if (!result) {
-      showNotification('Could not resolve movie — try a different provider', 'error');
-      return;
-    }
-
-    if (result.warn) {
-      showNotification(`⚠️ ${result.warn} Trying anyway…`, 'info');
-    }
-
-    // Default to Hindi dub if no explicit preference set
-    const langToApply = currentEmbedLang || 'hi';
-    if (!localStorage.getItem('wotchly_embed_lang')) {
-      currentEmbedLang = 'hi';
-      localStorage.setItem('wotchly_embed_lang', 'hi');
-    }
-
-    const finalUrl = _applyEmbedParams(result.url, langToApply, currentEmbedSubLang);
-
-    // Track for retry
-    _lastAnimeLoad = { type: 'movie', malId, anilistId, title };
-
-    document.getElementById('videoModal')?.classList.remove('active');
-    await loadSharedContent(finalUrl);
-    await updateFirebaseState('paused', 0, finalUrl);
-
-    const langName = langToApply === 'hi' ? 'Hindi dub' : langToApply.toUpperCase();
-    const idNote = result.warn ? ' (try next provider if blank)' : '';
-    showNotification(`${escapeHtml(title)} — movie loading (${langName})${idNote}`, result.warn ? 'info' : 'success');
-    // Show retry bar so host can switch provider if Hindi isn't available
-    setTimeout(_showDubRetryBar, 1200);
-  }
-
-  if (seAnimeSearchBtn) seAnimeSearchBtn.addEventListener('click', runAnimeSearch);
-  if (seAnimeQuery) seAnimeQuery.addEventListener('keydown', e => { if (e.key === 'Enter') runAnimeSearch(); });
-  if (seAnimeBackBtn) {
-    seAnimeBackBtn.addEventListener('click', () => {
-      if (seAnimeEpSection) seAnimeEpSection.style.display = 'none';
-      if (seAnimeResults) seAnimeResults.innerHTML = '';
-      if (seAnimeQuery) seAnimeQuery.value = '';
-    });
-  }
 }
 
 // ============================================================
