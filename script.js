@@ -1280,6 +1280,35 @@ const _MB_GRADIENTS = [
   'linear-gradient(160deg,#00101a 0%,#00304d 55%,#005c8c 100%)',
 ];
 
+// Cinema cards — preview (Internet Archive embed) & download actions.
+const _MB_ACTION_SVG = {
+  eye: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+  dl:  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+};
+
+function _mbPosterActions(item) {
+  const id = item.id || '';
+  return `
+  <div class="mb-poster-actions">
+    <button type="button" class="mb-action-btn mb-preview-btn" data-ia-id="${id}" title="Preview" aria-label="Preview">${_MB_ACTION_SVG.eye}</button>
+    <button type="button" class="mb-action-btn mb-download-btn" data-ia-id="${id}" title="Download" aria-label="Download">${_MB_ACTION_SVG.dl}</button>
+  </div>`;
+}
+
+function _bindPosterActions(scope) {
+  scope.querySelectorAll('.mb-action-btn[data-ia-id]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = btn.dataset.iaId;
+      if (!id) return;
+      const url = btn.classList.contains('mb-preview-btn')
+        ? `https://archive.org/embed/${id}`
+        : `https://archive.org/download/${id}/`;
+      window.open(url, '_blank', 'noopener');
+    });
+  });
+}
+
 /**
  * Build card HTML for a list of movie/show items and inject into the grid.
  * Re-attaches click handlers so host selections work on live results.
@@ -1304,9 +1333,10 @@ function renderMovieBoxCards(items, grid, hero) {
     const year  = item.year  || '';
     const stars = item.rating ? `${item.rating} ★` : '';
     const meta  = [year, stars].filter(Boolean).join(' &nbsp;·&nbsp; ');
+    const safeTitle = String(item.title).replace(/"/g, '&quot;');
     return `
       <div class="mb-rank-item" data-cat="${item.cat || 'all'}">
-        <div class="mb-card" data-movie-id="${item.id}" data-title="${item.title}" title="Click to play in room">
+        <div class="mb-card" data-movie-id="${item.id}" data-title="${safeTitle}" title="Click to play in room">
           <div class="mb-poster" style="background:${bg};position:relative;overflow:hidden">
             ${coverImg}
             <span class="mb-rank-badge">${i + 1}</span>
@@ -1314,6 +1344,7 @@ function renderMovieBoxCards(items, grid, hero) {
             <div class="mb-poster-play">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><polygon points="6,3 20,12 6,21"/></svg>
             </div>
+            ${_mbPosterActions(item)}
             <div class="mb-poster-overlay"></div>
           </div>
           <div class="mb-card-info">
@@ -1331,6 +1362,7 @@ function renderMovieBoxCards(items, grid, hero) {
       selectMovieBoxTitle(card.dataset.movieId);
     });
   });
+  _bindPosterActions(grid);
 
   // Update hero banner to show the first result
   if (hero && items.length > 0) {
@@ -1421,7 +1453,7 @@ async function loadMovieBoxStream(movieId) {
   // Instant, local resolution from the built-in catalog.
   const streamUrl = await loadCatalogStream(movieId);
   if (!streamUrl) {
-    showNotification('Cinema: title not found', 'error');
+    showNotification('Cinema: could not load this title', 'error');
     return null;
   }
   return streamUrl;
@@ -1575,6 +1607,7 @@ function initMovieBoxUI() {
           <div class="mb-poster-play-sm">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><polygon points="6,3 20,12 6,21"/></svg>
           </div>
+          ${_mbPosterActions(item)}
           <div class="mb-poster-overlay"></div>
         </div>
         <p class="mb-card-title">${item.title}</p>
@@ -1593,6 +1626,7 @@ function initMovieBoxUI() {
         selectMovieBoxTitle(card.dataset.movieId);
       });
     });
+    _bindPosterActions(el);
   }
 
   // ── Render 3-col search results grid ───────────────────────
@@ -1606,6 +1640,7 @@ function initMovieBoxUI() {
         selectMovieBoxTitle(card.dataset.movieId);
       });
     });
+    _bindPosterActions(el);
   }
 
   // ── Update hero with real item ──────────────────────────────

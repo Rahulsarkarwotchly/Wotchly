@@ -180,3 +180,28 @@ body.keyboard-open .chat-input-bar {
   background: linear-gradient(180deg, transparent, rgba(10, 10, 18, 0.6) 30%);
   backdrop-filter: blur(10px);
 }
+
+/* ============================================================
+   Cinema cards — preview & download action buttons
+   (Internet Archive embed preview + download page)
+   ============================================================ */
+.mb-poster-sm { position: relative; }
+.mb-poster-actions {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  display: flex; gap: .4rem;
+  padding: .45rem;
+  background: linear-gradient(to top, rgba(0,0,0,.8), rgba(0,0,0,.25) 75%, transparent);
+  z-index: 3;
+}
+.mb-action-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 1.9rem; height: 1.9rem;
+  border-radius: 50%; border: none;
+  background: rgba(255,255,255,.18);
+  backdrop-filter: blur(6px);
+  color: #fff; cursor: pointer;
+  transition: background .2s, transform .15s;
+}
+.mb-action-btn:hover { background: rgba(255,255,255,.34); transform: scale(1.06); }
+.mb-action-btn svg { width: .95rem; height: .95rem; }

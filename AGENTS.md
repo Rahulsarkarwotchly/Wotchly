@@ -14,7 +14,7 @@ docker compose -f docker-compose.base44.yml up -d
 | Piece | File | Notes |
 |---|---|---|
 | Firebase client | `firebase.js` | Thin wrapper over `firebase/database`: exports `db`, `ref`, `set`, `get`, `push`, `update`, `remove`, `onValue`, `onDisconnect` |
-| Built-in content catalog | `catalog.js` | Public-domain + CC films (Internet Archive) and Apple/Mux HLS demos |
+| Live Cinema catalog | `catalog.js` | Real full-length movies/dramas from the Internet Archive open API (no key); Hindi-prioritized; per-item preview (IA embed) + download buttons on cards |
 | Keyboard handling | `keyboard.js` | `visualViewport`-based; keeps the video player visible when the mobile keyboard opens (portrait + landscape) |
 | Luxury UI layer | `premium.css` | Loaded after style.css; aurora ambience, gold/glass surfaces, keyboard-open states |
 
