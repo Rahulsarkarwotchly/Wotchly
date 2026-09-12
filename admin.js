@@ -1,4 +1,4 @@
-import { db, ref, set, get, remove, onValue, update } from './sync.js';
+import { db, ref, set, get, remove, onValue, update } from './firebase.js';
 
 // Access key stored as SHA-256 byte array — no plaintext in source.
 // Each number is one byte of the SHA-256 digest of the access code.

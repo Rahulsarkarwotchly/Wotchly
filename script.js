@@ -12,7 +12,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-import { db, ref, set, get, push, update, remove, onValue, onDisconnect } from './sync.js';
+import { db, ref, set, get, push, update, remove, onValue, onDisconnect } from './firebase.js';
 import { fetchCatalogFeed, loadCatalogStream } from './catalog.js';
 import Hls from 'hls.js';
 

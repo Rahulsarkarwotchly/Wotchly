@@ -24,12 +24,5 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5000,
     allowedHosts: true,
-    proxy: {
-      // Wotchly self-hosted sync server (rooms, chat, presence) — no external services.
-      '/ws': {
-        target: process.env.SYNC_PROXY_TARGET || 'ws://sync:8081',
-        ws: true,
-      },
-    },
   },
 });
