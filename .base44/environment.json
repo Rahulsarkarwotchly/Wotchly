@@ -46,8 +46,8 @@
       "generatedForDevelopment": true
     },
     {
-      "name": "BACKEND_ORIGIN",
-      "description": "MovieBox backend origin URL (Render/FastAPI service for feed & stream proxying). Optional — falls back to the built-in default.",
+      "name": "TMDB_API_KEY",
+      "description": "TMDB API key (themoviedb.org → Settings → API). Optional — enables worldwide title search, posters and official trailers. Free to obtain.",
       "requiredAtBoot": false
     }
   ]

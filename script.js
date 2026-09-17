@@ -1604,6 +1604,7 @@ async function fetchMovieBoxFeed(category = 'trending', query = '') {
                     : '',
     type:     item.type  || item.media_type || (item.subjectType === 1 ? 'movie' : item.subjectType === 2 ? 'tv' : ''),
     cat:      _inferCat(item),
+    badge:    item.badge || '',
     gradient: item.gradient || '',
   })).filter(item => {
     if (!item.id || !item.title) return false;
@@ -1631,19 +1632,19 @@ async function loadMovieBoxStream(movieId) {
     }
   }
   if (!resp || !resp.ok) {
-    showNotification('MovieBox: server unreachable', 'error');
+    showNotification('Discover: could not resolve a stream for this title', 'error');
     return null;
   }
 
   if (!resp.ok) {
-    showNotification(`MovieBox: server error (${resp.status})`, 'error');
+    showNotification(`Discover: server error (${resp.status})`, 'error');
     return null;
   }
 
   const data = await resp.json().catch(() => null);
   const streamUrl = data?.stream_url || data?.url;
   if (!streamUrl) {
-    showNotification('MovieBox: response did not contain a stream URL', 'error');
+    showNotification('Discover: no playable stream for this title', 'error');
     return null;
   }
 
@@ -1659,7 +1660,7 @@ async function selectMovieBoxTitle(movieId) {
   if (!isHost) { showNotification('Only the host can select media', 'info'); return; }
 
   document.getElementById('videoModal')?.classList.remove('active');
-  showNotification('Loading from MovieBox…', 'info');
+  showNotification('Loading title…', 'info');
 
   // Write only the ID — each client fetches their own stream URL independently
   // via listenToRoom so the actual streaming link never travels through Firebase
@@ -1693,9 +1694,9 @@ const _MB_SVG = {
 function _mbShowRowError(el, type, onRetry) {
   if (!el) return;
   const cfg = {
-    not_configured: { icon: _MB_SVG.gear,   title: 'API not configured',      msg: 'Configure the MovieBox backend in Netlify server settings.', retryLabel: null },
+    not_configured: { icon: _MB_SVG.gear,   title: 'API not configured',      msg: 'Configure a media source in Netlify server settings.', retryLabel: null },
     timeout:        { icon: _MB_SVG.clock,  title: 'Server is starting up',   msg: 'The API server is waking from inactivity. This takes ~30s.', retryLabel: 'Retry' },
-    server_down:    { icon: _MB_SVG.server, title: 'API unavailable',         msg: 'The MovieBox server returned an error. Try again shortly.', retryLabel: 'Retry' },
+    server_down:    { icon: _MB_SVG.server, title: 'API unavailable',         msg: 'The media source returned an error. Try again shortly.', retryLabel: 'Retry' },
     network:        { icon: _MB_SVG.wifi,   title: 'Connection error',        msg: 'Could not reach the server. Check your connection.', retryLabel: 'Retry' },
     unknown:        { icon: _MB_SVG.alert,  title: 'Unable to load content',  msg: 'Something went wrong. Please retry.', retryLabel: 'Retry' },
   };
@@ -1790,7 +1791,7 @@ function initMovieBoxUI() {
   function _cardHtml(item, i, showRank) {
     const bg   = item.gradient || _MB_GRADIENTS[i % _MB_GRADIENTS.length];
     const img  = item.cover ? `<img src="${item.cover}" class="mb-poster-img-abs" loading="lazy" alt="">` : '';
-    const lang = item.lang || '';
+    const lang = item.badge || item.lang || '';
     const rank = showRank ? `<span class="mb-rank-badge mb-rank-color-${Math.min(i + 1, 3)}">${i + 1}</span>` : '';
     const lb   = lang ? `<span class="mb-lang-badge">${lang}</span>` : '';
     const meta = [item.year, item.rating ? `${item.rating}★` : ''].filter(Boolean).join(' · ');
@@ -3179,7 +3180,7 @@ function listenToRoom() {
       for (let attempt = 0; attempt < 4; attempt++) {
         if (_movieLoadVersion !== myVersion) break; // newer selection arrived
         if (attempt > 0) {
-          showNotification(`MovieBox: server waking up, retry ${attempt}/3…`, 'info');
+          showNotification(`Media source waking up, retry ${attempt}/3…`, 'info');
           await new Promise(r => setTimeout(r, 5000));
         }
         if (_movieLoadVersion !== myVersion) break;
