@@ -26,6 +26,11 @@ feature. Placeholder values in `.env.base44-defaults` let the app boot; real
 values should be supplied via the Base44 secrets dashboard (delivered to
 `/run/base44/app.env`). The browsing/streaming features work without Firebase.
 
+`BACKEND_ORIGIN` optionally overrides the MovieBox backend the dev proxy targets
+(production reads the same var). The built-in default,
+`https://moviebox-internal-api.onrender.com`, currently returns 404 for every
+route, so room content browsing needs a working origin to show live data.
+
 ## Key files
 - `vite.config.js` — dev proxy for MovieBox API (get-feed, get-stream)
 - `script.js` — room page logic (host controls, sync, chat)

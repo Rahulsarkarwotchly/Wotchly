@@ -5,7 +5,7 @@ const __dirname = import.meta.dirname;
 
 // Netlify Functions own the backend connection; local preview uses safe fallbacks.
 const MOVIEBOX_API = (() => {
-  const raw = 'https://moviebox-internal-api.onrender.com';
+  const raw = process.env.BACKEND_ORIGIN || 'https://moviebox-internal-api.onrender.com';
   return `${/^https?:\/\//i.test(raw) ? '' : 'https://'}${raw}`.replace(/\/$/, '');
 })();
 

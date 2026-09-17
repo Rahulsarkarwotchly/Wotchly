@@ -44,6 +44,11 @@
       "description": "Firebase Web App ID (Firebase Console → Project Settings → General → Your apps → Web app)",
       "requiredAtBoot": false,
       "generatedForDevelopment": true
+    },
+    {
+      "name": "BACKEND_ORIGIN",
+      "description": "MovieBox backend origin URL (Render/FastAPI service for feed & stream proxying). Optional — falls back to the built-in default.",
+      "requiredAtBoot": false
     }
   ]
 }
