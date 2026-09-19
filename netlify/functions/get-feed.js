@@ -34,8 +34,9 @@ export const handler = async (event) => {
 
   const failures = [];
 
-  // TMDB first for text search (best title matching), Archive first for shelves.
-  const order = query ? ['tmdb', 'ia'] : ['ia', 'tmdb'];
+  // TMDB first everywhere: modern worldwide movies/shows with rich posters.
+  // Internet Archive supplements with full public-domain classics.
+  const order = ['tmdb', 'ia'];
   let items = [];
 
   for (const source of order) {

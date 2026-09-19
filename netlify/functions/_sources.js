@@ -233,7 +233,7 @@ function tmdbItemToCard(item, forcedType = '') {
         : '',
     type: mediaType,
     cat: '',
-    badge: 'Trailer',
+    badge: '',
   };
 }
 
@@ -266,18 +266,32 @@ export async function tmdbFeed({ category = 'trending', query = '', rows = 20 } 
     .slice(0, rows);
 }
 
-/** Resolve a TMDB title to its official YouTube trailer (plays in the YT player). */
+// Default embed provider (matches EMBED_PROVIDERS[0] in streamResolver.js).
+const EMBED_BASE = 'https://player.autoembed.co';
+
+/**
+ * Resolve a TMDB title to a full-movie embed URL.
+ * Fetches the IMDb ID via /external_ids for maximum provider compatibility,
+ * falls back to the TMDB ID if unavailable. TV shows default to S1E1.
+ */
 export async function tmdbStream(mediaType, id) {
   if (!tmdbKeyConfigured()) throw new Error('TMDB_API_KEY is not configured');
   const type = mediaType === 'tv' ? 'tv' : 'movie';
-  const json = await tmdbGet(`/${type}/${id}/videos`);
-  const videos = json.results || [];
-  const pick = videos.find(v => v.site === 'YouTube' && v.type === 'Trailer')
-    || videos.find(v => v.site === 'YouTube' && ['Teaser', 'Clip'].includes(v.type))
-    || videos.find(v => v.site === 'YouTube');
-  if (!pick) throw new Error('no trailer available for this title');
+
+  // Try to get the IMDb ID — embed providers accept it most reliably.
+  let embedId = id;
+  try {
+    const ext = await tmdbGet(`/${type}/${id}/external_ids`);
+    if (ext.imdb_id) embedId = ext.imdb_id;
+  } catch { /* fall back to TMDB id */ }
+
+  const streamUrl = type === 'tv'
+    ? `${EMBED_BASE}/embed/tv/${embedId}/1/1`
+    : `${EMBED_BASE}/embed/movie/${embedId}`;
+
   return {
-    embed_url: `https://www.youtube.com/embed/${pick.key}?autoplay=1&rel=0`,
-    title: json.name || '',
+    stream_url: streamUrl,
+    provider: 'embed',
+    subtitles: [],
   };
 }

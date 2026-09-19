@@ -4,7 +4,7 @@
 //
 //   ia:<archive-identifier>   → direct MP4 URL from archive.org. Plays in the
 //                               app's own HTML5 player, so sync stays exact.
-//   tmdb:<movie|tv>:<tmdb-id> → official YouTube trailer embed URL.
+//   tmdb:<movie|tv>:<tmdb-id> → full movie/show embed URL (autoembed.co).
 //
 // The response keeps the historical `stream_url` contract. Archive items also
 // return `subtitles` (WebVTT files hosted by archive.org).
@@ -40,12 +40,7 @@ export const handler = async (event) => {
     if (id.startsWith('tmdb:')) {
       const [, mediaType, tmdbId] = id.split(':');
       const resolved = await tmdbStream(mediaType, tmdbId);
-      return json(200, {
-        stream_url: resolved.embed_url,
-        provider: 'tmdb-trailer',
-        title: resolved.title,
-        subtitles: [],
-      });
+      return json(200, resolved);
     }
 
     return json(400, { error: `Unrecognised media id: ${id}` });
