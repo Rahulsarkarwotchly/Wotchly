@@ -10,7 +10,7 @@
 //     No API key required.
 //
 //   • TMDB — worldwide metadata for search (posters, year, rating, language).
-//     A TMDB title plays its official trailer through the YouTube player.
+//     A TMDB title resolves to a FULL MOVIE embed (autoembed.co) — not a trailer.
 //     Optional: only used when TMDB_API_KEY is configured.
 //
 // Item ids are namespaced so the stream resolver knows where to look:
@@ -98,11 +98,28 @@ function archiveSearchUrl(query, rows, sort = 'downloads desc') {
   return `${ARCHIVE_SEARCH}?${params.toString()}`;
 }
 
+// Filter out adult/exploitation/low-quality content from Archive results
+const ARCHIVE_BLOCKLIST = [
+  'sex', 'nude', 'nudist', 'erotic', 'porn', 'adult', 'exploitation',
+  'striptease', 'burlesque', 'fetish', 'stag film', 'blue movie',
+  'seduction', 'virgin', 'prostitut', 'strip ', 'topless',
+];
+
+function _isArchiveBlocked(item) {
+  const title = (item.title || '').toLowerCase();
+  const subjects = Array.isArray(item.subject) ? item.subject.join(' ') : String(item.subject || '');
+  const desc = String(item.description || '');
+  const haystack = `${title} ${subjects} ${desc}`.toLowerCase();
+  return ARCHIVE_BLOCKLIST.some(w => haystack.includes(w));
+}
+
 function archiveItemToCard(doc) {
   const identifier = first(doc.identifier);
   if (!identifier) return null;
   const title = first(doc.title).replace(/\s+/g, ' ').trim();
   if (!title) return null;
+  // Skip adult/exploitation content
+  if (_isArchiveBlocked(doc)) return null;
   return {
     id: `ia:${identifier}`,
     title,
@@ -196,20 +213,20 @@ function tmdbGet(path, params) {
 
 const TMDB_CATEGORY_PATHS = {
   trending: ['/trending/all/week', {}],
-  movie: ['/movie/popular', {}],
-  movies: ['/movie/popular', {}],
-  hollywood: ['/discover/movie', { with_original_language: 'en', sort_by: 'popularity.desc' }],
+  movie: ['/movie/now_playing', { region: 'IN', language: 'en-US' }],
+  movies: ['/movie/now_playing', { region: 'IN', language: 'en-US' }],
+  hollywood: ['/discover/movie', { with_original_language: 'en', sort_by: 'popularity.desc', 'vote_count.gte': 100 }],
   tv: ['/tv/popular', {}],
   serials: ['/discover/tv', { with_genres: '18', sort_by: 'popularity.desc' }],
   anime: ['/discover/tv', { with_genres: '16', with_original_language: 'ja', sort_by: 'popularity.desc' }],
-  midnight: ['/discover/movie', { with_genres: '27', sort_by: 'popularity.desc' }],
+  midnight: ['/discover/movie', { with_genres: '27', sort_by: 'popularity.desc', 'vote_count.gte': 50 }],
   'short drama': ['/discover/tv', { with_genres: '18', sort_by: 'popularity.desc' }],
-  drama: ['/discover/movie', { with_genres: '18', sort_by: 'popularity.desc' }],
-  bollywood: ['/discover/movie', { with_original_language: 'hi', sort_by: 'popularity.desc' }],
-  hindi: ['/discover/movie', { with_original_language: 'hi', sort_by: 'popularity.desc' }],
-  south: ['/discover/movie', { with_original_language: 'ta', sort_by: 'popularity.desc' }],
-  korean: ['/discover/movie', { with_original_language: 'ko', sort_by: 'popularity.desc' }],
-  chinese: ['/discover/movie', { with_original_language: 'zh', sort_by: 'popularity.desc' }],
+  drama: ['/discover/movie', { with_genres: '18', sort_by: 'popularity.desc', 'vote_count.gte': 50 }],
+  bollywood: ['/discover/movie', { with_original_language: 'hi', sort_by: 'popularity.desc', 'vote_count.gte': 20 }],
+  hindi: ['/discover/movie', { with_original_language: 'hi', sort_by: 'popularity.desc', 'vote_count.gte': 20 }],
+  south: ['/discover/movie', { with_original_language: 'ta', sort_by: 'popularity.desc', 'vote_count.gte': 20 }],
+  korean: ['/discover/movie', { with_original_language: 'ko', sort_by: 'popularity.desc', 'vote_count.gte': 20 }],
+  chinese: ['/discover/movie', { with_original_language: 'zh', sort_by: 'popularity.desc', 'vote_count.gte': 20 }],
   web: ['/discover/tv', { sort_by: 'popularity.desc' }],
 };
 
@@ -219,6 +236,8 @@ function tmdbItemToCard(item, forcedType = '') {
   const id = item.id;
   const title = item.title || item.name || '';
   if (!id || !title) return null;
+  // Must have a poster — trailers, songs, and people entries don't
+  if (!item.poster_path && !item.backdrop_path) return null;
   const date = item.release_date || item.first_air_date || '';
   return {
     id: `tmdb:${mediaType}:${id}`,
@@ -250,11 +269,21 @@ export async function tmdbFeed({ category = 'trending', query = '', rows = 20 } 
       const hits = [...(found.movie_results || []), ...(found.tv_results || [])];
       return hits.slice(0, rows).map(item => tmdbItemToCard(item)).filter(Boolean);
     }
-    const search = await tmdbGet('/search/multi', { query, include_adult: 'false' });
-    return (search.results || [])
-      .map(item => tmdbItemToCard(item))
-      .filter(Boolean)
-      .slice(0, rows);
+    // Search movies AND TV shows separately for full-movie/show results
+    // (avoids /search/multi returning people, trailers, music videos, etc.)
+    const [movieSearch, tvSearch] = await Promise.all([
+      tmdbGet('/search/movie', { query, include_adult: 'false', language: 'en-US' }),
+      tmdbGet('/search/tv', { query, include_adult: 'false', language: 'en-US' }),
+    ]);
+    const movieResults = (movieSearch.results || [])
+      .filter(r => r.poster_path) // must have a poster — real titles only
+      .map(item => tmdbItemToCard({ ...item, media_type: 'movie' }))
+      .filter(Boolean);
+    const tvResults = (tvSearch.results || [])
+      .filter(r => r.poster_path)
+      .map(item => tmdbItemToCard({ ...item, media_type: 'tv' }))
+      .filter(Boolean);
+    return [...movieResults, ...tvResults].slice(0, rows);
   }
 
   const [path, params] = TMDB_CATEGORY_PATHS[String(category).toLowerCase()] || TMDB_CATEGORY_PATHS.trending;
@@ -285,9 +314,11 @@ export async function tmdbStream(mediaType, id) {
     if (ext.imdb_id) embedId = ext.imdb_id;
   } catch { /* fall back to TMDB id */ }
 
+  // Build the embed URL with default Hindi audio dub support.
+  // autoembed.co accepts ?primaryLang=CODE for audio dubbing.
   const streamUrl = type === 'tv'
-    ? `${EMBED_BASE}/embed/tv/${embedId}/1/1`
-    : `${EMBED_BASE}/embed/movie/${embedId}`;
+    ? `${EMBED_BASE}/embed/tv/${embedId}/1/1?primaryLang=hi`
+    : `${EMBED_BASE}/embed/movie/${embedId}?primaryLang=hi`;
 
   return {
     stream_url: streamUrl,

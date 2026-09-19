@@ -979,8 +979,12 @@ function updateSpeedPresets() {
 }
 
 function applyPlaybackSpeed() {
-  if (window.videoPlayer) { try { window.videoPlayer.playbackRate = playbackSettings.playbackSpeed; } catch {} }
-  if (window.youtubePlayer && window.ytReady) { try { window.youtubePlayer.setPlaybackRate(playbackSettings.playbackSpeed); } catch {} }
+  // Access the module-level videoPlayer exposed on window by script.js
+  const vp = window.videoPlayer || (typeof videoPlayer !== 'undefined' ? videoPlayer : null);
+  if (vp) { try { vp.playbackRate = playbackSettings.playbackSpeed; } catch {} }
+  const yp = window.youtubePlayer || (typeof youtubePlayer !== 'undefined' ? youtubePlayer : null);
+  const ytr = window.ytReady || (typeof ytReady !== 'undefined' ? ytReady : false);
+  if (yp && ytr) { try { yp.setPlaybackRate(playbackSettings.playbackSpeed); } catch {} }
 }
 
 function savePlaybackSettings() {

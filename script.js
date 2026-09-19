@@ -74,6 +74,17 @@ let _unreadCount = 0;
 window._unreadCount = 0;
 let currentAccentColor = '#C7B8FF';
 
+// ---- Playback settings (shared with room.html inline script) ----
+// Read from localStorage so both the inline settings UI and this module
+// stay in sync. Updated live when the user changes a setting.
+function getPlaybackSettings() {
+  try {
+    return JSON.parse(localStorage.getItem('wotchly_playback_settings') || 'null') || {
+      autoplay: true, bgPlayback: true, autoResync: true, playbackSpeed: 1, syncThreshold: 2
+    };
+  } catch { return { autoplay: true, bgPlayback: true, autoResync: true, playbackSpeed: 1, syncThreshold: 2 }; }
+}
+
 // ---- Firebase listener references (for cleanup) ----
 let roomListenerUnsubscribe = null;
 let chatListenerUnsubscribe = null;
@@ -803,6 +814,9 @@ async function createVideoPlayer(url) {
   videoPlayer = null;
   youtubePlayer = null;
   ytReady = false;
+  window.videoPlayer = null;
+  window.youtubePlayer = null;
+  window.ytReady = false;
   // Reset language selector for new media
   availableAudioTracks = [];
   availableSubtitleTracks = [];
@@ -877,6 +891,13 @@ async function createVideoPlayer(url) {
       events: {
         onReady: e => {
           ytReady = true;
+          window.ytReady = true;
+          window.youtubePlayer = youtubePlayer;
+          // Apply saved playback speed
+          const _pb = getPlaybackSettings();
+          if (_pb.playbackSpeed && _pb.playbackSpeed !== 1) {
+            try { e.target.setPlaybackRate(_pb.playbackSpeed); } catch {}
+          }
           const seekSlider = document.getElementById('seekSlider');
           if (seekSlider) seekSlider.max = Math.floor(e.target.getDuration());
           applyAudioSettings();
@@ -992,6 +1013,7 @@ async function createVideoPlayer(url) {
     const video = createBaseVideoElement();
     videoContainer.appendChild(video);
     videoPlayer = video;
+    window.videoPlayer = video;
 
     if (Hls.isSupported()) {
       hlsInstance = new Hls({ enableWorker: true, lowLatencyMode: false, maxBufferLength: 30, maxBufferSize: 60 * 1000 * 1000 });
@@ -1001,6 +1023,9 @@ async function createVideoPlayer(url) {
         showNotification('HLS stream loaded', 'success');
         const seekSlider = document.getElementById('seekSlider');
         if (seekSlider && video.duration) seekSlider.max = Math.floor(video.duration);
+        // Apply saved playback speed
+        const _pbSpeed = getPlaybackSettings().playbackSpeed;
+        if (_pbSpeed && _pbSpeed !== 1) { try { video.playbackRate = _pbSpeed; } catch {} }
         applyAudioSettings();
         connectMediaToAudioContext(video);
         initMediaSession();
@@ -1223,6 +1248,10 @@ async function createVideoPlayer(url) {
   const video = createBaseVideoElement();
   videoContainer.appendChild(video);
   videoPlayer = video;
+  window.videoPlayer = video;
+  // Apply saved playback speed
+  const _pbSpeed = getPlaybackSettings().playbackSpeed;
+  if (_pbSpeed && _pbSpeed !== 1) { try { video.playbackRate = _pbSpeed; } catch {} }
   video.src = processedUrl;
   video.load();
   updateModeIndicator('player', type === 'drive' ? 'drive' : 'direct');
@@ -2952,13 +2981,18 @@ function computeSyncTarget(data) {
 function applyVideoSync(data) {
   if (!data || data.lastUpdatedBy === userId) return;
 
+  // Read live playback settings — autoResync controls whether guests auto-correct drift
+  const pbSettings = getPlaybackSettings();
+  const effectiveThreshold = pbSettings.syncThreshold || SYNC_THRESHOLD;
+  const shouldResync = pbSettings.autoResync !== false;
+
   const target = computeSyncTarget(data);
 
   if (videoPlayer) {
     const current = videoPlayer.currentTime;
     const diff = target - current;
     // Sync forward if > threshold, or sync backward only if > 8s behind
-    if (Math.abs(diff) > SYNC_THRESHOLD && (diff > 0 || diff < -8)) {
+    if (shouldResync && Math.abs(diff) > effectiveThreshold && (diff > 0 || diff < -8)) {
       videoPlayer.currentTime = Math.min(target, videoPlayer.duration || Infinity);
     }
     if (data.playState === 'playing' && videoPlayer.paused && !isManuallyPaused) {
@@ -2971,7 +3005,7 @@ function applyVideoSync(data) {
   if (youtubePlayer && ytReady && typeof youtubePlayer.seekTo === 'function') {
     const ytTime = youtubePlayer.getCurrentTime();
     const diff = target - ytTime;
-    if (Math.abs(diff) > SYNC_THRESHOLD && (diff > 0 || diff < -8)) {
+    if (shouldResync && Math.abs(diff) > effectiveThreshold && (diff > 0 || diff < -8)) {
       youtubePlayer.seekTo(target, true);
     }
     const state = youtubePlayer.getPlayerState();
@@ -2998,7 +3032,7 @@ function applyVideoSync(data) {
       updateSyncBadge('syncing');
       // Attempt seek if significantly out of sync
       const diff = target - embedCurrentOffset;
-      if (Math.abs(diff) > SYNC_THRESHOLD && (diff > 0 || diff < -8)) {
+      if (shouldResync && Math.abs(diff) > effectiveThreshold && (diff > 0 || diff < -8)) {
         sendIframeCommand('seek', target);
         embedCurrentOffset = target;
         embedPlayStartTime = Date.now();
@@ -3573,6 +3607,9 @@ function forceBackgroundPlayback() {
 }
 
 function startBackgroundPlaybackMonitor() {
+  // Respect the Background Playback setting — if the user turned it off, don't force playback when hidden
+  const _pb = getPlaybackSettings();
+  if (_pb.bgPlayback === false) return;
   if (backgroundPlaybackInterval || isManuallyPaused) return;
   backgroundPlaybackInterval = setInterval(() => {
     if (document.hidden && lastKnownPlayingState && !userInitiatedPause && !isManuallyPaused) forceBackgroundPlayback();

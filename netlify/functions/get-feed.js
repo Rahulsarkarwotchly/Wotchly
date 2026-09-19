@@ -34,16 +34,21 @@ export const handler = async (event) => {
 
   const failures = [];
 
-  // TMDB first everywhere: modern worldwide movies/shows with rich posters.
-  // Internet Archive supplements with full public-domain classics.
-  const order = ['tmdb', 'ia'];
+  // For movie/cinema/trending categories and search, TMDB is the primary source
+  // (gives latest worldwide movies/shows with rich posters + full-movie embeds).
+  // Internet Archive supplements only for categories where TMDB may be sparse
+  // (anime, serials, classics) or as a fallback when TMDB fails.
+  const isMovieCategory = ['trending','movie','movies','hollywood','bollywood','hindi','south','korean','chinese','drama','midnight'].includes(category.toLowerCase());
+  const useArchive = !isMovieCategory || !tmdbKeyConfigured();
+
+  const order = useArchive ? ['tmdb', 'ia'] : ['tmdb'];
   let items = [];
 
   for (const source of order) {
     try {
       const part = source === 'tmdb'
-        ? await tmdbFeed({ category, query, rows: query ? 12 : 12 })
-        : await archiveFeed({ category, query, rows: query ? 24 : 36 });
+        ? await tmdbFeed({ category, query, rows: query ? 24 : 20 })
+        : await archiveFeed({ category, query, rows: query ? 12 : 24 });
       items = items.concat(part);
     } catch (err) {
       console.error(`[get-feed] ${source} failed:`, err.message);
