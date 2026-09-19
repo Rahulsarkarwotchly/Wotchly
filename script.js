@@ -1530,7 +1530,7 @@ function renderMovieBoxCards(items, grid, hero) {
 // Language-code → category mapping for client-side sub-tab filtering.
 // Used when the API doesn't return an explicit category/genre field.
 const _MB_LANG_CAT = {
-  hi: 'bollywood', hin: 'bollywood', hindi: 'bollywood',
+  hi: 'hindi',     hin: 'hindi',     hindi: 'hindi',
   en: 'hollywood', eng: 'hollywood', english: 'hollywood',
   ko: 'korean',    kor: 'korean',
   ja: 'anime',     jpn: 'anime',

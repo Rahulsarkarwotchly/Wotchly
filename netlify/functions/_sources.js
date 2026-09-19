@@ -260,7 +260,7 @@ function tmdbItemToCard(item, forcedType = '') {
  * Query TMDB. Returns [] when no key is configured so callers can merge safely.
  * `query` may also be an IMDb id (`tt…`), resolved through /find.
  */
-export async function tmdbFeed({ category = 'trending', query = '', rows = 20 } = {}) {
+export async function tmdbFeed({ category = 'trending', query = '', rows = 40 } = {}) {
   if (!tmdbKeyConfigured()) return [];
 
   if (query) {
@@ -287,9 +287,16 @@ export async function tmdbFeed({ category = 'trending', query = '', rows = 20 } 
   }
 
   const [path, params] = TMDB_CATEGORY_PATHS[String(category).toLowerCase()] || TMDB_CATEGORY_PATHS.trending;
-  const json = await tmdbGet(path, params);
   const forcedType = path.startsWith('/movie') ? 'movie' : path.startsWith('/tv') ? 'tv' : '';
-  return (json.results || [])
+  // TMDB returns 20 results per page — fetch multiple pages for more content.
+  const pages = Math.ceil(rows / 20);
+  const pagePromises = [];
+  for (let p = 1; p <= pages; p++) {
+    pagePromises.push(tmdbGet(path, { ...params, page: p }));
+  }
+  const pageResults = await Promise.all(pagePromises);
+  return pageResults
+    .flatMap(json => (json.results || []))
     .map(item => tmdbItemToCard(item, forcedType))
     .filter(Boolean)
     .slice(0, rows);
