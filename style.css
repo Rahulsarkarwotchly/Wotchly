@@ -8259,3 +8259,497 @@ body.landscape-mode .wp-widget { display: none; }
 }
 .mb-featured-row { margin-top: -.1rem; }
 
+
+/* ============================================================
+   PREMIUM UI UPGRADE — Toggle Switches, Settings, URL Loader
+   ============================================================ */
+
+/* ---- Premium Toggle Switch (iOS-style) ---- */
+.premium-toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 26px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.premium-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+.premium-toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-elevated);
+  border: 1.5px solid var(--border-strong);
+  border-radius: 999px;
+  transition: all var(--t-base) var(--ease);
+}
+.premium-toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--text-muted);
+  border-radius: 50%;
+  transition: all var(--t-base) var(--ease-spring);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.premium-toggle input:checked + .premium-toggle-slider {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border-color: var(--primary);
+  box-shadow: 0 0 12px var(--glow-sm);
+}
+.premium-toggle input:checked + .premium-toggle-slider::before {
+  transform: translateY(-50%) translateX(18px);
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.premium-toggle:active .premium-toggle-slider::before {
+  width: 22px;
+}
+
+/* ---- Settings Toggle Row ---- */
+.settings-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 0.85rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  transition: border-color var(--t-fast) var(--ease);
+}
+.settings-toggle-row:hover { border-color: var(--border-strong); }
+.settings-toggle-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  flex: 1;
+  min-width: 0;
+}
+.settings-toggle-icon {
+  color: var(--primary);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.settings-toggle-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+.settings-toggle-desc {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-top: 1px;
+}
+
+/* ---- Settings Value Tag ---- */
+.settings-value-tag {
+  display: inline-block;
+  padding: 1px 8px;
+  background: var(--border);
+  border-radius: var(--r-full);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--primary);
+  font-family: var(--font-mono);
+  margin-left: 0.4rem;
+  vertical-align: middle;
+}
+
+/* ---- Speed Presets ---- */
+.speed-presets {
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+.speed-preset {
+  padding: 0.3rem 0.65rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--t-fast) var(--ease);
+  font-family: var(--font);
+}
+.speed-preset:hover { border-color: var(--border-strong); color: var(--text); }
+.speed-preset.active {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: #1a1a2e;
+  border-color: var(--primary);
+  box-shadow: 0 0 10px var(--glow-sm);
+}
+
+/* ---- Theme Picker ---- */
+.theme-picker {
+  display: flex;
+  gap: 0.6rem;
+}
+.theme-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.75rem;
+  background: var(--bg-elevated);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: all var(--t-base) var(--ease);
+  position: relative;
+  font-family: var(--font);
+}
+.theme-option:hover { border-color: var(--border-strong); }
+.theme-option.active {
+  border-color: var(--primary);
+  box-shadow: 0 0 12px var(--glow-sm);
+}
+.theme-option .theme-check {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  color: var(--primary);
+  opacity: 0;
+  transition: opacity var(--t-fast) var(--ease);
+}
+.theme-option.active .theme-check { opacity: 1; }
+.theme-option span { font-size: 0.75rem; font-weight: 600; color: var(--text); }
+.theme-preview {
+  width: 100%;
+  height: 36px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+}
+.theme-preview-dark { background: linear-gradient(135deg, #08080e 0%, #161622 100%); }
+.theme-preview-light { background: linear-gradient(135deg, #f4f4fb 0%, #ffffff 100%); }
+
+/* ---- Accent Colour Picker ---- */
+.accent-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.accent-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all var(--t-fast) var(--ease-spring);
+  position: relative;
+  padding: 0;
+}
+.accent-swatch:hover { transform: scale(1.15); }
+.accent-swatch.active {
+  border-color: #fff;
+  transform: scale(1.2);
+  box-shadow: 0 0 12px currentColor;
+}
+.accent-swatch.active::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  opacity: 0.4;
+}
+
+/* ---- Premium URL Loader Overlay ---- */
+.url-loader-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 8, 14, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.url-loader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+}
+.url-loader-ring {
+  position: relative;
+  width: 56px;
+  height: 56px;
+}
+.url-loader-spin {
+  animation: urlLoaderSpin 1.2s linear infinite;
+  transform-origin: center;
+}
+@keyframes urlLoaderSpin {
+  to { transform: rotate(360deg); }
+}
+.url-loader-text {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.01em;
+}
+.url-loader-dots {
+  display: flex;
+  gap: 4px;
+}
+.url-loader-dots span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--primary);
+  animation: urlLoaderDot 1.4s ease-in-out infinite;
+}
+.url-loader-dots span:nth-child(2) { animation-delay: 0.2s; }
+.url-loader-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes urlLoaderDot {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1.2); }
+}
+
+/* ---- Cinema Mode ---- */
+.room-wrapper.cinema-mode .room-header,
+.room-wrapper.cinema-mode .video-controls,
+.room-wrapper.cinema-mode .bottom-section {
+  opacity: 0.15;
+  transition: opacity 0.4s var(--ease);
+}
+.room-wrapper.cinema-mode .room-header:hover,
+.room-wrapper.cinema-mode .video-controls:hover,
+.room-wrapper.cinema-mode .bottom-section:hover {
+  opacity: 1;
+}
+.room-wrapper.cinema-mode .video-section {
+  box-shadow: 0 0 40px rgba(0,0,0,0.6);
+}
+
+/* ---- Reduce Motion ---- */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* ---- Enhanced Premium Buttons ---- */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  transition: left 0.5s var(--ease);
+  z-index: 1;
+}
+.btn-primary:hover::before { left: 120%; }
+
+/* ---- Premium Input Fields ---- */
+.input-field {
+  position: relative;
+  transition: all var(--t-base) var(--ease);
+}
+.input-field:focus {
+  transform: translateY(-1px);
+}
+
+/* ---- Enhanced Modal Header ---- */
+.modal-header {
+  position: relative;
+  overflow: hidden;
+}
+.modal-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  opacity: 0.3;
+}
+
+/* ---- Settings Tabs Enhanced ---- */
+.settings-tab {
+  position: relative;
+  transition: all var(--t-base) var(--ease);
+}
+.settings-tab::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+  border-radius: 1px;
+  transition: all var(--t-base) var(--ease);
+  transform: translateX(-50%);
+}
+.settings-tab.active::after { width: 70%; }
+.settings-tab:hover { color: var(--text); }
+
+/* ---- Premium Header Buttons ---- */
+.header-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all var(--t-fast) var(--ease);
+}
+.header-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.15), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--t-fast) var(--ease);
+}
+.header-btn:hover::after { opacity: 1; }
+
+/* ---- Premium Ctrl Buttons ---- */
+.ctrl-btn {
+  position: relative;
+  overflow: hidden;
+}
+.ctrl-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, var(--glow-sm), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--t-base) var(--ease);
+}
+.ctrl-btn:hover::before { opacity: 1; }
+.ctrl-btn:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* ---- Premium Media Button ---- */
+.media-btn {
+  position: relative;
+  overflow: hidden;
+}
+.media-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.6s var(--ease);
+}
+.media-btn:hover::after { left: 120%; }
+
+/* ---- Premium Bottom Tabs ---- */
+.bottom-tab {
+  position: relative;
+  overflow: hidden;
+  transition: all var(--t-base) var(--ease);
+}
+.bottom-tab::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+  border-radius: 1px;
+  transition: all var(--t-base) var(--ease);
+  transform: translateX(-50%);
+}
+.bottom-tab.active::after { width: 60%; }
+
+/* ---- Enhanced Seek Slider ---- */
+.seek-slider:hover { height: 7px; }
+.seek-slider::-webkit-slider-thumb {
+  box-shadow: 0 0 8px var(--glow), 0 2px 4px rgba(0,0,0,0.3);
+  transition: all var(--t-fast) var(--ease);
+}
+.seek-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.4);
+  box-shadow: 0 0 16px var(--glow-strong), 0 2px 6px rgba(0,0,0,0.3);
+}
+
+/* ---- Premium Card Hover ---- */
+.card {
+  transition: all var(--t-slow) var(--ease);
+}
+.home-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg), 0 0 24px var(--glow-sm);
+}
+
+/* ---- Premium Feature Pills ---- */
+.feature-pill {
+  transition: all var(--t-base) var(--ease);
+}
+.feature-pill:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2), 0 0 12px var(--glow-sm);
+}
+.feature-pill svg { transition: transform var(--t-base) var(--ease); }
+.feature-pill:hover svg { transform: scale(1.2); }
+
+/* ---- Premium Send Button ---- */
+.send-action-btn {
+  position: relative;
+  overflow: hidden;
+}
+.send-action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s var(--ease);
+}
+.send-action-btn:hover::before { left: 120%; }
+
+/* ---- Premium Gate Button ---- */
+.gate-btn {
+  position: relative;
+  overflow: hidden;
+}
+.gate-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s var(--ease);
+}
+.gate-btn:hover::before { left: 120%; }
+
+/* ---- Premium Modal Close ---- */
+.modal-close {
+  transition: all var(--t-base) var(--ease-spring);
+}
+.modal-close:hover {
+  transform: rotate(90deg);
+}

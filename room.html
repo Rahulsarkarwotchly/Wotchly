@@ -190,6 +190,22 @@ html.home-page body,html.legal-page body{overflow-y:auto;height:auto;min-height:
         </div>
       </div>
 
+      <!-- Premium URL Loader -->
+      <div class="url-loader-overlay" id="urlLoaderOverlay" style="display:none;">
+        <div class="url-loader-content">
+          <div class="url-loader-ring">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="48" height="48">
+              <circle cx="25" cy="25" r="20" fill="none" stroke="rgba(199,184,255,0.15)" stroke-width="3"/>
+              <circle cx="25" cy="25" r="20" fill="none" stroke="url(#loaderGrad)" stroke-width="3" stroke-linecap="round" stroke-dasharray="80 200" class="url-loader-spin">
+                <defs><linearGradient id="loaderGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#C7B8FF"/><stop offset="100%" stop-color="#9D8AE0"/></linearGradient></defs>
+              </circle>
+            </svg>
+          </div>
+          <p class="url-loader-text" id="urlLoaderText">Loading media…</p>
+          <div class="url-loader-dots"><span></span><span></span><span></span></div>
+        </div>
+      </div>
+
       <div class="video-container" id="videoContainer">
         <div class="video-placeholder" id="videoPlaceholder">
           <div class="placeholder-icon">
@@ -604,7 +620,9 @@ html.home-page body,html.legal-page body{overflow-y:auto;height:auto;min-height:
     </div>
     <div class="settings-tabs">
       <button class="settings-tab active" data-tab="general">General</button>
+      <button class="settings-tab" data-tab="playback">Playback</button>
       <button class="settings-tab" data-tab="audio">Audio</button>
+      <button class="settings-tab" data-tab="appearance">Appearance</button>
       <button class="settings-tab" data-tab="host">Host</button>
     </div>
     <div class="modal-body" style="padding:0;overflow-y:auto;flex:1;">
@@ -626,6 +644,76 @@ html.home-page body,html.legal-page body{overflow-y:auto;height:auto;min-height:
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             Leave Room
           </button>
+        </div>
+      </div>
+
+      <!-- Playback Panel -->
+      <div class="settings-panel" id="playbackPanel">
+        <div class="settings-group">
+          <div class="settings-toggle-row">
+            <div class="settings-toggle-info">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" class="settings-toggle-icon"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
+              <div>
+                <span class="settings-toggle-label">Autoplay on Join</span>
+                <span class="settings-toggle-desc">Auto-play media when entering the room</span>
+              </div>
+            </div>
+            <label class="premium-toggle">
+              <input type="checkbox" id="settingAutoplay" checked>
+              <span class="premium-toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="settings-group">
+          <div class="settings-toggle-row">
+            <div class="settings-toggle-info">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" class="settings-toggle-icon"><path d="M9 12l2 2 4-4"/><path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c2.39 0 4.68.94 6.36 2.64"/></svg>
+              <div>
+                <span class="settings-toggle-label">Background Playback</span>
+                <span class="settings-toggle-desc">Keep audio playing when tab is hidden</span>
+              </div>
+            </div>
+            <label class="premium-toggle">
+              <input type="checkbox" id="settingBgPlayback" checked>
+              <span class="premium-toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="settings-group">
+          <div class="settings-toggle-row">
+            <div class="settings-toggle-info">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" class="settings-toggle-icon"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
+              <div>
+                <span class="settings-toggle-label">Auto-Resync</span>
+                <span class="settings-toggle-desc">Automatically resync when drift is detected</span>
+              </div>
+            </div>
+            <label class="premium-toggle">
+              <input type="checkbox" id="settingAutoResync" checked>
+              <span class="premium-toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">Playback Speed <span class="settings-value-tag" id="speedValueTag">1.0x</span></label>
+          <div class="slider-row">
+            <input type="range" id="settingPlaybackSpeed" min="0.5" max="2" step="0.1" value="1" class="audio-slider">
+            <span class="slider-value" id="playbackSpeedValue">1.0x</span>
+          </div>
+          <div class="speed-presets">
+            <button class="speed-preset" data-speed="0.5">0.5x</button>
+            <button class="speed-preset" data-speed="1">1x</button>
+            <button class="speed-preset" data-speed="1.25">1.25x</button>
+            <button class="speed-preset" data-speed="1.5">1.5x</button>
+            <button class="speed-preset" data-speed="2">2x</button>
+          </div>
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">Sync Tolerance <span class="settings-value-tag" id="syncTolTag">2.0s</span></label>
+          <div class="slider-row">
+            <input type="range" id="settingSyncThreshold" min="0.5" max="10" step="0.5" value="2" class="audio-slider">
+            <span class="slider-value" id="syncThresholdValue">2.0s</span>
+          </div>
         </div>
       </div>
 
@@ -681,6 +769,83 @@ html.home-page body,html.legal-page body{overflow-y:auto;height:auto;min-height:
           <div class="eq-bar" style="--height:65%"></div>
           <div class="eq-bar" style="--height:75%"></div>
           <div class="eq-bar" style="--height:55%"></div>
+        </div>
+      </div>
+
+      <!-- Appearance Panel -->
+      <div class="settings-panel" id="appearancePanel">
+        <div class="settings-group">
+          <label class="settings-label">Theme</label>
+          <div class="theme-picker">
+            <button class="theme-option" data-theme-val="dark">
+              <div class="theme-preview theme-preview-dark"></div>
+              <span>Dark</span>
+              <svg class="theme-check" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <button class="theme-option" data-theme-val="light">
+              <div class="theme-preview theme-preview-light"></div>
+              <span>Light</span>
+              <svg class="theme-check" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">Accent Colour</label>
+          <div class="accent-picker" id="accentPicker">
+            <button class="accent-swatch active" data-accent="#C7B8FF" style="background:#C7B8FF"></button>
+            <button class="accent-swatch" data-accent="#FF6B6B" style="background:#FF6B6B"></button>
+            <button class="accent-swatch" data-accent="#4ECDC4" style="background:#4ECDC4"></button>
+            <button class="accent-swatch" data-accent="#FFD700" style="background:#FFD700"></button>
+            <button class="accent-swatch" data-accent="#FF69B4" style="background:#FF69B4"></button>
+            <button class="accent-swatch" data-accent="#00CED1" style="background:#00CED1"></button>
+            <button class="accent-swatch" data-accent="#FFA07A" style="background:#FFA07A"></button>
+            <button class="accent-swatch" data-accent="#98D8C8" style="background:#98D8C8"></button>
+          </div>
+        </div>
+        <div class="settings-group">
+          <div class="settings-toggle-row">
+            <div class="settings-toggle-info">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" class="settings-toggle-icon"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              <div>
+                <span class="settings-toggle-label">Cinema Mode</span>
+                <span class="settings-toggle-desc">Dim surrounding UI for immersive viewing</span>
+              </div>
+            </div>
+            <label class="premium-toggle">
+              <input type="checkbox" id="settingCinemaMode">
+              <span class="premium-toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="settings-group">
+          <div class="settings-toggle-row">
+            <div class="settings-toggle-info">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" class="settings-toggle-icon"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              <div>
+                <span class="settings-toggle-label">Reduce Motion</span>
+                <span class="settings-toggle-desc">Minimize animations and transitions</span>
+              </div>
+            </div>
+            <label class="premium-toggle">
+              <input type="checkbox" id="settingReduceMotion">
+              <span class="premium-toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="settings-group">
+          <div class="settings-toggle-row">
+            <div class="settings-toggle-info">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" class="settings-toggle-icon"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+              <div>
+                <span class="settings-toggle-label">Show Viewers Panel</span>
+                <span class="settings-toggle-desc">Display the viewers list alongside chat</span>
+              </div>
+            </div>
+            <label class="premium-toggle">
+              <input type="checkbox" id="settingShowViewers" checked>
+              <span class="premium-toggle-slider"></span>
+            </label>
+          </div>
         </div>
       </div>
 
@@ -744,6 +909,179 @@ document.querySelectorAll('.bottom-tab').forEach(tab => {
       window._unreadCount = 0;
     }
   });
+});
+
+// ---- Playback Settings ----
+const playbackSettings = JSON.parse(localStorage.getItem('wotchly_playback_settings') || 'null') || {
+  autoplay: true, bgPlayback: true, autoResync: true,
+  playbackSpeed: 1, syncThreshold: 2
+};
+
+function initPlaybackSettings() {
+  const autoplay = document.getElementById('settingAutoplay');
+  const bgPlayback = document.getElementById('settingBgPlayback');
+  const autoResync = document.getElementById('settingAutoResync');
+  const speedSlider = document.getElementById('settingPlaybackSpeed');
+  const speedValue = document.getElementById('playbackSpeedValue');
+  const speedTag = document.getElementById('speedValueTag');
+  const syncSlider = document.getElementById('settingSyncThreshold');
+  const syncValue = document.getElementById('syncThresholdValue');
+  const syncTag = document.getElementById('syncTolTag');
+
+  if (autoplay) { autoplay.checked = playbackSettings.autoplay; autoplay.onchange = e => { playbackSettings.autoplay = e.target.checked; savePlaybackSettings(); }; }
+  if (bgPlayback) { bgPlayback.checked = playbackSettings.bgPlayback; bgPlayback.onchange = e => { playbackSettings.bgPlayback = e.target.checked; savePlaybackSettings(); }; }
+  if (autoResync) { autoResync.checked = playbackSettings.autoResync; autoResync.onchange = e => { playbackSettings.autoResync = e.target.checked; savePlaybackSettings(); }; }
+
+  if (speedSlider) {
+    speedSlider.value = playbackSettings.playbackSpeed;
+    speedSlider.oninput = e => {
+      playbackSettings.playbackSpeed = +e.target.value;
+      const label = playbackSettings.playbackSpeed.toFixed(1) + 'x';
+      if (speedValue) speedValue.textContent = label;
+      if (speedTag) speedTag.textContent = label;
+      updateSpeedPresets();
+      applyPlaybackSpeed();
+      savePlaybackSettings();
+    };
+  }
+  if (syncSlider) {
+    syncSlider.value = playbackSettings.syncThreshold;
+    syncSlider.oninput = e => {
+      playbackSettings.syncThreshold = +e.target.value;
+      const label = playbackSettings.syncThreshold.toFixed(1) + 's';
+      if (syncValue) syncValue.textContent = label;
+      if (syncTag) syncTag.textContent = label;
+      savePlaybackSettings();
+    };
+  }
+
+  // Speed presets
+  document.querySelectorAll('.speed-preset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const speed = parseFloat(btn.dataset.speed);
+      playbackSettings.playbackSpeed = speed;
+      if (speedSlider) speedSlider.value = speed;
+      const label = speed.toFixed(1) + 'x';
+      if (speedValue) speedValue.textContent = label;
+      if (speedTag) speedTag.textContent = label;
+      updateSpeedPresets();
+      applyPlaybackSpeed();
+      savePlaybackSettings();
+    });
+  });
+  updateSpeedPresets();
+}
+
+function updateSpeedPresets() {
+  document.querySelectorAll('.speed-preset').forEach(btn => {
+    btn.classList.toggle('active', parseFloat(btn.dataset.speed) === playbackSettings.playbackSpeed);
+  });
+}
+
+function applyPlaybackSpeed() {
+  if (window.videoPlayer) { try { window.videoPlayer.playbackRate = playbackSettings.playbackSpeed; } catch {} }
+  if (window.youtubePlayer && window.ytReady) { try { window.youtubePlayer.setPlaybackRate(playbackSettings.playbackSpeed); } catch {} }
+}
+
+function savePlaybackSettings() {
+  localStorage.setItem('wotchly_playback_settings', JSON.stringify(playbackSettings));
+}
+
+// ---- Appearance Settings ----
+const appearanceSettings = JSON.parse(localStorage.getItem('wotchly_appearance_settings') || 'null') || {
+  accent: '#C7B8FF', cinemaMode: false, reduceMotion: false, showViewers: true
+};
+
+function initAppearanceSettings() {
+  // Theme picker
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+  document.querySelectorAll('.theme-option').forEach(opt => {
+    opt.classList.toggle('active', opt.dataset.themeVal === currentTheme);
+    opt.addEventListener('click', () => {
+      const theme = opt.dataset.themeVal;
+      document.documentElement.setAttribute('data-theme', theme);
+      document.body.setAttribute('data-theme', theme);
+      localStorage.setItem('wotchly_theme', theme);
+      document.querySelectorAll('.theme-option').forEach(o => o.classList.toggle('active', o === opt));
+    });
+  });
+
+  // Accent picker
+  const savedAccent = localStorage.getItem('wotchly_accent') || appearanceSettings.accent;
+  document.querySelectorAll('.accent-swatch').forEach(sw => {
+    sw.classList.toggle('active', sw.dataset.accent === savedAccent);
+    sw.addEventListener('click', () => {
+      const accent = sw.dataset.accent;
+      document.documentElement.style.setProperty('--primary', accent);
+      document.documentElement.style.setProperty('--primary-hover', accent);
+      localStorage.setItem('wotchly_accent', accent);
+      appearanceSettings.accent = accent;
+      saveAppearanceSettings();
+      document.querySelectorAll('.accent-swatch').forEach(s => s.classList.toggle('active', s === sw));
+    });
+  });
+
+  // Cinema mode
+  const cinemaToggle = document.getElementById('settingCinemaMode');
+  if (cinemaToggle) {
+    cinemaToggle.checked = appearanceSettings.cinemaMode;
+    cinemaToggle.onchange = e => {
+      appearanceSettings.cinemaMode = e.target.checked;
+      document.querySelector('.room-wrapper')?.classList.toggle('cinema-mode', e.target.checked);
+      saveAppearanceSettings();
+    };
+  }
+
+  // Reduce motion
+  const motionToggle = document.getElementById('settingReduceMotion');
+  if (motionToggle) {
+    motionToggle.checked = appearanceSettings.reduceMotion;
+    motionToggle.onchange = e => {
+      appearanceSettings.reduceMotion = e.target.checked;
+      document.body.classList.toggle('reduce-motion', e.target.checked);
+      saveAppearanceSettings();
+    };
+  }
+
+  // Show viewers
+  const viewersToggle = document.getElementById('settingShowViewers');
+  if (viewersToggle) {
+    viewersToggle.checked = appearanceSettings.showViewers;
+    viewersToggle.onchange = e => {
+      appearanceSettings.showViewers = e.target.checked;
+      saveAppearanceSettings();
+      const bottomSection = document.querySelector('.bottom-section');
+      if (bottomSection) bottomSection.style.display = e.target.checked ? '' : 'none';
+    };
+  }
+}
+
+function saveAppearanceSettings() {
+  localStorage.setItem('wotchly_appearance_settings', JSON.stringify(appearanceSettings));
+}
+
+// ---- Premium URL Loader ----
+function showUrlLoader(text = 'Loading media…') {
+  const overlay = document.getElementById('urlLoaderOverlay');
+  const textEl = document.getElementById('urlLoaderText');
+  if (textEl) textEl.textContent = text;
+  if (overlay) overlay.style.display = 'flex';
+}
+function hideUrlLoader() {
+  const overlay = document.getElementById('urlLoaderOverlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+// Initialize settings when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  initPlaybackSettings();
+  initAppearanceSettings();
+  // Apply saved accent
+  const savedAccent = localStorage.getItem('wotchly_accent');
+  if (savedAccent) document.documentElement.style.setProperty('--primary', savedAccent);
+  // Apply saved cinema mode
+  if (appearanceSettings.cinemaMode) document.querySelector('.room-wrapper')?.classList.add('cinema-mode');
+  if (appearanceSettings.reduceMotion) document.body.classList.add('reduce-motion');
 });
 
 // OTT shortcuts

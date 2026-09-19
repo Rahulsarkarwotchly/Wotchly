@@ -1358,7 +1358,23 @@ function createBaseVideoElement() {
 
 async function loadSharedContent(url) {
   if (!url) return;
-  await createVideoPlayer(url);
+  // Show premium URL loader
+  const loaderOverlay = document.getElementById('urlLoaderOverlay');
+  const loaderText = document.getElementById('urlLoaderText');
+  if (loaderOverlay) {
+    if (loaderText) {
+      const type = detectVideoType(url);
+      const labels = { 'youtube':'Loading YouTube…','youtube-url':'Loading YouTube…','vimeo':'Loading Vimeo…','dailymotion':'Loading Dailymotion…','direct':'Loading video…','hls':'Loading stream…','drive':'Loading Drive video…','audio':'Loading audio…','embed':'Loading stream…','website':'Loading website…' };
+      loaderText.textContent = labels[type] || 'Loading media…';
+    }
+    loaderOverlay.style.display = 'flex';
+  }
+  try {
+    await createVideoPlayer(url);
+  } finally {
+    // Hide loader after a short delay to let the player render
+    setTimeout(() => { if (loaderOverlay) loaderOverlay.style.display = 'none'; }, 1200);
+  }
 }
 
 // ============================================================
