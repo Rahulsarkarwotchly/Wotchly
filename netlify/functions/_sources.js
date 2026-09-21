@@ -302,13 +302,21 @@ export async function tmdbFeed({ category = 'trending', query = '', rows = 40 } 
     .slice(0, rows);
 }
 
-// Default embed provider (matches EMBED_PROVIDERS[0] in streamResolver.js).
-const EMBED_BASE = 'https://player.autoembed.co';
+// Embed providers ordered by reliability. vidsrc.xyz is the most reliable
+// for mainstream movies/shows; autoembed.co and vidlink.pro are fallbacks.
+const EMBED_PROVIDERS_SV = [
+  'https://vidsrc.xyz',
+  'https://vidsrc.to',
+  'https://player.autoembed.co',
+];
 
 /**
  * Resolve a TMDB title to a full-movie embed URL.
  * Fetches the IMDb ID via /external_ids for maximum provider compatibility,
  * falls back to the TMDB ID if unavailable. TV shows default to S1E1.
+ *
+ * No language params are baked in here — the client-side language selector
+ * handles audio/subtitle preferences so users can choose per-title.
  */
 export async function tmdbStream(mediaType, id) {
   if (!tmdbKeyConfigured()) throw new Error('TMDB_API_KEY is not configured');
@@ -321,11 +329,13 @@ export async function tmdbStream(mediaType, id) {
     if (ext.imdb_id) embedId = ext.imdb_id;
   } catch { /* fall back to TMDB id */ }
 
-  // Build the embed URL with default Hindi audio dub support.
-  // autoembed.co accepts ?primaryLang=CODE for audio dubbing.
+  // Use the primary embed provider (vidsrc.xyz — most reliable).
+  // No ?primaryLang is set here; the client applies it via _applyEmbedParams
+  // based on the user's language preference (default: original audio, no dub).
+  const base = EMBED_PROVIDERS_SV[0];
   const streamUrl = type === 'tv'
-    ? `${EMBED_BASE}/embed/tv/${embedId}/1/1?primaryLang=hi`
-    : `${EMBED_BASE}/embed/movie/${embedId}?primaryLang=hi`;
+    ? `${base}/embed/tv/${embedId}/1/1`
+    : `${base}/embed/movie/${embedId}`;
 
   return {
     stream_url: streamUrl,

@@ -225,7 +225,7 @@ let availableAudioTracks = [];
 let availableSubtitleTracks = [];
 let currentAudioTrackId = -1;
 let currentSubtitleTrackId = -1;
-let currentEmbedLang    = localStorage.getItem('wotchly_embed_lang')     || 'hi';   // active audio/dub lang for iframe embeds (default: Hindi dub)
+let currentEmbedLang    = localStorage.getItem('wotchly_embed_lang')     || null;   // active audio/dub lang for iframe embeds (null = original audio, no forced dub)
 let currentEmbedSubLang = localStorage.getItem('wotchly_embed_sub_lang') || null;   // active subtitle lang for iframe embeds ('off' = disabled)
 let isEmbedLangMode = false;   // true when lang selector is showing embed languages
 let embedPlayStartTime = null; // wall-clock when iframe play was last triggered
@@ -824,7 +824,7 @@ async function createVideoPlayer(url) {
   currentSubtitleTrackId = -1;
   // Preserve embed lang/subtitle preference — re-hydrate from localStorage so
   // the user's selections survive navigation and synced loads.
-  currentEmbedLang    = localStorage.getItem('wotchly_embed_lang')     || 'hi';   // default Hindi dub
+  currentEmbedLang    = localStorage.getItem('wotchly_embed_lang')     || null;   // null = original audio
   currentEmbedSubLang = localStorage.getItem('wotchly_embed_sub_lang') || null;
   isEmbedLangMode = false;
   embedPlayStartTime = null;

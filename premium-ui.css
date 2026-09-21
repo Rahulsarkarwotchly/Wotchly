@@ -974,3 +974,397 @@ body::before {
 .mode-indicator {
   border-radius: var(--r-pill) !important;
 }
+
+/* ============================================================
+   CHAT — PREMIUM MOBILE-FRIENDLY ENHANCEMENTS
+   ============================================================ */
+
+/* Chat messages — colorful gradient avatars */
+.chat-message .chat-avatar {
+  border-radius: 50% !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  transition: transform 0.2s var(--ease-spring);
+}
+.chat-message:hover .chat-avatar { transform: scale(1.1); }
+
+/* Chat message bubble — premium rounded */
+.chat-message .chat-bubble,
+.chat-message .chat-text {
+  border-radius: 18px 18px 18px 4px !important;
+  transition: all 0.2s var(--ease) !important;
+}
+.chat-message.own .chat-bubble,
+.chat-message.own .chat-text {
+  border-radius: 18px 18px 4px 18px !important;
+}
+
+/* Chat input bar — premium glassmorphism */
+.chat-input-bar {
+  background: linear-gradient(180deg, rgba(15, 15, 30, 0.6) 0%, rgba(12, 12, 25, 0.8) 100%) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-top: 1px solid var(--border-strong) !important;
+  padding: 0.5rem 0.75rem !important;
+  gap: 0.5rem !important;
+}
+[data-theme="light"] .chat-input-bar {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, rgba(248, 248, 255, 0.9) 100%) !important;
+}
+
+/* Chat input — premium pill with glow */
+.chat-input-bar .input-field {
+  border-radius: var(--r-pill) !important;
+  padding: 0.6rem 1rem !important;
+  font-size: 0.9rem !important;
+  background: linear-gradient(135deg, var(--bg-input) 0%, rgba(180, 160, 255, 0.04) 100%) !important;
+}
+
+/* Chat action buttons — premium round */
+.chat-action-btn {
+  border-radius: 50% !important;
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.25s var(--ease-spring) !important;
+}
+
+/* Chat panel — premium scroll */
+.chat-messages {
+  scroll-behavior: smooth;
+  padding: 0.75rem !important;
+}
+
+/* Chat timestamp — subtle */
+.chat-message .chat-time,
+.chat-message time {
+  opacity: 0.55;
+  font-size: 0.7rem !important;
+}
+
+/* Chat system messages — colorful */
+.chat-message.system .chat-text,
+.chat-message.system .chat-bubble {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.12) 0%, rgba(240, 147, 251, 0.08) 100%) !important;
+  border: 1px solid rgba(102, 126, 234, 0.2) !important;
+  color: var(--primary) !important;
+  font-style: italic;
+}
+
+/* ============================================================
+   MOBILE — BOTTOM TABS & PANELS PREMIUM
+   ============================================================ */
+
+@media (max-width: 768px) {
+  /* Bottom tabs — premium pill design */
+  .bottom-tabs {
+    gap: 0.25rem !important;
+    padding: 0.35rem !important;
+    background: linear-gradient(180deg, rgba(15, 15, 30, 0.95) 0%, rgba(12, 12, 25, 0.98) 100%) !important;
+    border-top: 1px solid var(--border-strong) !important;
+  }
+  .bottom-tab {
+    border-radius: var(--r-pill) !important;
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    transition: all 0.25s var(--ease-spring) !important;
+  }
+  .bottom-tab.active {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(240, 147, 251, 0.12) 100%) !important;
+    border: 1px solid rgba(102, 126, 234, 0.3) !important;
+    border-bottom: none !important;
+  }
+  .bottom-tab svg { width: 18px; height: 18px; }
+
+  /* Chat input bar — mobile optimized */
+  .chat-input-bar {
+    padding: 0.4rem 0.5rem !important;
+    gap: 0.4rem !important;
+  }
+  .chat-input-bar .input-field {
+    padding: 0.55rem 0.85rem !important;
+    font-size: 0.85rem !important;
+  }
+  .chat-action-btn {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+  }
+  .chat-action-btn svg { width: 16px; height: 16px; }
+
+  /* Panel headers — mobile compact */
+  .panel-header {
+    padding: 0.6rem 0.85rem !important;
+    font-size: 0.85rem !important;
+  }
+  .panel-header svg { width: 16px; height: 16px; }
+
+  /* Video controls — mobile compact */
+  .ctrl-btn {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+  }
+  .ctrl-btn svg { width: 16px; height: 16px; }
+
+  /* Header buttons — mobile compact */
+  .header-btn {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+  }
+  .header-btn svg { width: 15px; height: 15px; }
+
+  /* Media button — mobile compact */
+  .media-btn {
+    padding: 0.3rem 0.7rem !important;
+    font-size: 0.8rem !important;
+  }
+  .media-btn svg { width: 14px; height: 14px; }
+
+  /* Room code chip — mobile compact */
+  .room-code-chip {
+    padding: 0.3rem 0.7rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  /* Modal — mobile full-width */
+  .modal {
+    border-radius: 20px !important;
+  }
+
+  /* Settings tabs — scrollable */
+  .settings-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .settings-tabs::-webkit-scrollbar { display: none; }
+
+  /* MB pills — scrollable */
+  .mb-pills-row {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 0.25rem;
+  }
+  .mb-pills-row::-webkit-scrollbar { display: none; }
+  .mb-pill {
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding: 0.4rem 0.85rem !important;
+    font-size: 0.78rem !important;
+  }
+}
+
+/* ============================================================
+   SVG ICON VISIBILITY — ENHANCE ALL ICONS
+   ============================================================ */
+
+/* Ensure SVG icons are properly sized and visible */
+.header-btn svg,
+.ctrl-btn svg,
+.chat-action-btn svg,
+.bottom-tab svg,
+.modal-close svg,
+.panel-header svg,
+.gate-btn-icon svg,
+.feature-pill svg,
+.mb-search-icon,
+.se-back-btn svg {
+  transition: all 0.25s var(--ease-spring);
+}
+
+/* Premium gradient stroke for outline icons in dark mode */
+[data-theme="dark"] .header-btn:hover svg,
+[data-theme="dark"] .ctrl-btn:hover svg,
+[data-theme="dark"] .bottom-tab:hover svg {
+  filter: drop-shadow(0 0 4px var(--glow-sm));
+}
+
+/* ============================================================
+   PREMIUM TOGGLE SWITCHES — ENHANCED
+   ============================================================ */
+
+.premium-toggle-slider {
+  background: linear-gradient(135deg, #3a3a4e 0%, #2a2a3e 100%) !important;
+  transition: all 0.3s var(--ease-spring) !important;
+}
+.premium-toggle input:checked + .premium-toggle-slider {
+  background: linear-gradient(135deg, #667eea 0%, #f093fb 100%) !important;
+  box-shadow: 0 0 12px rgba(240, 147, 251, 0.35) !important;
+}
+.premium-toggle-slider::before {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3) !important;
+  transition: all 0.3s var(--ease-spring) !important;
+}
+.premium-toggle input:checked + .premium-toggle-slider::before {
+  transform: translateX(20px) !important;
+}
+
+/* ============================================================
+   MB HERO — PREMIUM COLORFUL
+   ============================================================ */
+
+.mb-hero {
+  border-radius: 20px !important;
+  overflow: hidden;
+  border: 1px solid var(--border-strong) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3) !important;
+}
+.mb-hero-play-btn {
+  background: linear-gradient(135deg, #667eea 0%, #f093fb 100%) !important;
+  border-radius: 50% !important;
+  box-shadow: 0 4px 20px rgba(240, 147, 251, 0.4) !important;
+  transition: all 0.3s var(--ease-spring) !important;
+}
+.mb-hero-play-btn:hover {
+  transform: scale(1.12) !important;
+  box-shadow: 0 6px 28px rgba(240, 147, 251, 0.55) !important;
+}
+
+/* ============================================================
+   MB POSTER PLAY — PREMIUM
+   ============================================================ */
+
+.mb-poster-play {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(240, 147, 251, 0.85) 100%) !important;
+  border-radius: 50% !important;
+  box-shadow: 0 4px 16px rgba(240, 147, 251, 0.4) !important;
+  transition: all 0.3s var(--ease-spring) !important;
+  backdrop-filter: blur(4px) !important;
+}
+.mb-poster-play:hover {
+  transform: scale(1.15) !important;
+  box-shadow: 0 6px 24px rgba(240, 147, 251, 0.6) !important;
+}
+.mb-poster-play svg { color: #fff !important; }
+
+/* ============================================================
+   MB RANK BADGE — PREMIUM GOLD
+   ============================================================ */
+
+.mb-rank-badge {
+  background: linear-gradient(135deg, #FFD700 0%, #FF8C00 100%) !important;
+  color: #1a1a2e !important;
+  font-weight: 800 !important;
+  box-shadow: 0 2px 8px rgba(255, 140, 0, 0.4) !important;
+  border-radius: var(--r-pill) !important;
+}
+
+/* MB lang badge — colorful */
+.mb-lang-badge {
+  background: linear-gradient(135deg, rgba(79, 172, 254, 0.9) 0%, rgba(0, 242, 254, 0.85) 100%) !important;
+  color: #fff !important;
+  border-radius: var(--r-pill) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 8px rgba(79, 172, 254, 0.3) !important;
+}
+
+/* ============================================================
+   SYNC OVERLAY — PREMIUM
+   ============================================================ */
+
+.sync-overlay-ring {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(240, 147, 251, 0.15) 100%) !important;
+  border: 2px solid var(--border-strong) !important;
+  box-shadow: 0 0 32px rgba(240, 147, 251, 0.2) !important;
+}
+.sync-overlay-ring svg { color: #f093fb !important; }
+
+.sync-tap-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 20px rgba(118, 75, 162, 0.4) !important;
+  background-size: 200% 200% !important;
+  animation: gateBtnGradient 3s ease-in-out infinite;
+}
+.sync-tap-btn:hover {
+  transform: scale(1.05) !important;
+  box-shadow: 0 6px 28px rgba(240, 147, 251, 0.5) !important;
+  filter: brightness(1.1) !important;
+}
+.sync-tap-btn svg { color: #fff !important; }
+
+/* ============================================================
+   URL LOADER — PREMIUM ENHANCED
+   ============================================================ */
+
+.url-loader-overlay {
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+.url-loader-content {
+  background: linear-gradient(135deg, rgba(20, 20, 35, 0.95) 0%, rgba(30, 25, 50, 0.9) 100%) !important;
+  border: 1px solid var(--border-strong) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.4) !important;
+}
+.url-loader-text {
+  color: var(--primary) !important;
+  font-weight: 600 !important;
+}
+
+/* ============================================================
+   GATE HERO ICON — PREMIUM GRADIENT
+   ============================================================ */
+
+.gate-icon-core svg {
+  color: #f093fb !important;
+  stroke: url(#gate-hero-grad) !important;
+}
+.gate-icon-core {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(240, 147, 251, 0.1) 100%) !important;
+}
+
+/* ============================================================
+   SETTINGS TOGGLE ICONS — COLORFUL
+   ============================================================ */
+
+.settings-toggle-icon {
+  border-radius: 8px !important;
+  padding: 6px !important;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.12) 0%, rgba(240, 147, 251, 0.08) 100%) !important;
+  transition: all 0.25s var(--ease) !important;
+}
+.settings-toggle-row:hover .settings-toggle-icon {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(240, 147, 251, 0.14) 100%) !important;
+  transform: scale(1.05) !important;
+}
+
+/* ============================================================
+   ACCENT SWATCHES — PREMIUM
+   ============================================================ */
+
+.accent-swatch {
+  transition: all 0.25s var(--ease-spring) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+}
+.accent-swatch:hover {
+  transform: scale(1.2) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3) !important;
+}
+.accent-swatch.active {
+  transform: scale(1.15) !important;
+  box-shadow: 0 0 0 3px var(--bg-modal), 0 0 0 5px currentColor, 0 4px 16px rgba(0,0,0,0.3) !important;
+}
+
+/* ============================================================
+   MB CAT CHIP ICON — COLORFUL
+   ============================================================ */
+
+.mb-cat-chip-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.mb-cat-chip-icon svg {
+  color: var(--primary) !important;
+  transition: transform 0.25s var(--ease-spring);
+}
+.mb-cat-chip:hover .mb-cat-chip-icon svg {
+  transform: scale(1.2) rotate(5deg);
+}
