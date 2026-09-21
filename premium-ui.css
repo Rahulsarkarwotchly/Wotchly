@@ -1,0 +1,976 @@
+/* ============================================================
+   WOTCHLY — SUPER PREMIUM COLORFUL UI OVERRIDE
+   Pill buttons · Vibrant gradients · Shine sweeps · App-like
+   Loaded AFTER style.css — overrides for maximum luxury
+   ============================================================ */
+
+/* ---- Vibrant Color Tokens (override) ---- */
+:root {
+  --primary: #B4A0FF;
+  --primary-hover: #a78bff;
+  --primary-dark: #8B6FE0;
+  --primary-deep: #6B4FD0;
+  --accent: #E2D9FF;
+
+  /* Premium vibrant button gradients */
+  --grad-primary: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  --grad-secondary: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --grad-ghost: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  --grad-danger: linear-gradient(135deg, #ff0844 0%, #ffb199 100%);
+  --grad-success: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  --grad-gold: linear-gradient(135deg, #FFD700 0%, #FF6B6B 50%, #FF4D94 100%);
+
+  /* Colorful glows */
+  --glow: rgba(180, 160, 255, 0.45);
+  --glow-strong: rgba(180, 160, 255, 0.65);
+  --glow-sm: rgba(180, 160, 255, 0.25);
+  --glow-pink: rgba(240, 147, 251, 0.4);
+  --glow-blue: rgba(79, 172, 254, 0.4);
+  --glow-gold: rgba(255, 215, 0, 0.4);
+
+  /* Colorful borders */
+  --border: rgba(180, 160, 255, 0.16);
+  --border-strong: rgba(180, 160, 255, 0.28);
+  --border-focus: rgba(180, 160, 255, 0.55);
+
+  /* Pill radius */
+  --r-pill: 999px;
+}
+
+[data-theme="light"] {
+  --primary: #6B5BC0;
+  --primary-hover: #5d4eb3;
+  --primary-dark: #5547a8;
+  --primary-deep: #443896;
+  --glow: rgba(107, 91, 192, 0.35);
+  --glow-strong: rgba(107, 91, 192, 0.5);
+  --glow-sm: rgba(107, 91, 192, 0.15);
+  --border: rgba(100, 80, 180, 0.18);
+  --border-strong: rgba(100, 80, 180, 0.3);
+  --border-focus: rgba(107, 91, 192, 0.5);
+}
+
+/* ============================================================
+   ALL BUTTONS — PILL SHAPED + COLORFUL + SHINE SWEEP
+   ============================================================ */
+
+/* Base button → pill shape */
+.btn {
+  border-radius: var(--r-pill) !important;
+  padding: 0.65rem 1.5rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em !important;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s var(--ease-spring) !important;
+}
+
+/* Shine sweep on ALL buttons */
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 70%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+  transform: skewX(-15deg);
+  transition: left 0.6s var(--ease);
+  pointer-events: none;
+  z-index: 1;
+}
+.btn:hover::before { left: 130%; }
+.btn > * { position: relative; z-index: 2; }
+
+/* Primary → vibrant purple-pink-blue gradient */
+.btn-primary {
+  background: var(--grad-primary) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 20px rgba(118, 75, 162, 0.5), 0 2px 8px rgba(0,0,0,0.2) !important;
+  border: none !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+.btn-primary:hover {
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 8px 32px rgba(240, 147, 251, 0.5), 0 4px 14px rgba(118, 75, 162, 0.4) !important;
+  filter: brightness(1.08) saturate(1.15) !important;
+}
+.btn-primary:active { transform: translateY(0) scale(0.98) !important; }
+
+/* Secondary → colorful cyan gradient border */
+.btn-secondary {
+  background: linear-gradient(135deg, rgba(79, 172, 254, 0.12) 0%, rgba(0, 242, 254, 0.08) 100%) !important;
+  color: #4facfe !important;
+  border: 2px solid transparent !important;
+  background-clip: padding-box !important;
+  box-shadow: 0 0 0 2px transparent, 0 2px 12px rgba(79, 172, 254, 0.2) !important;
+}
+.btn-secondary::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: var(--r-pill);
+  background: var(--grad-secondary);
+  z-index: -1;
+}
+.btn-secondary:hover {
+  background: var(--grad-secondary) !important;
+  color: #fff !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 24px rgba(79, 172, 254, 0.45) !important;
+}
+
+/* Ghost → warm sunset gradient */
+.btn-ghost {
+  background: linear-gradient(135deg, rgba(250, 112, 154, 0.1) 0%, rgba(254, 225, 64, 0.08) 100%) !important;
+  color: #fa709a !important;
+  border: 2px solid rgba(250, 112, 154, 0.3) !important;
+}
+.btn-ghost:hover {
+  background: var(--grad-ghost) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 24px rgba(250, 112, 154, 0.4) !important;
+}
+
+/* Danger → red-pink gradient */
+.btn-danger {
+  background: linear-gradient(135deg, rgba(255, 8, 68, 0.1) 0%, rgba(255, 177, 153, 0.08) 100%) !important;
+  color: #ff0844 !important;
+  border: 2px solid rgba(255, 8, 68, 0.3) !important;
+}
+.btn-danger:hover {
+  background: var(--grad-danger) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 24px rgba(255, 8, 68, 0.4) !important;
+}
+
+/* Full-width button */
+.btn-full { border-radius: var(--r-pill) !important; }
+
+/* Small / large / icon buttons still pill */
+.btn-sm { border-radius: var(--r-pill) !important; padding: 0.45rem 1rem !important; }
+.btn-lg { border-radius: var(--r-pill) !important; padding: 0.9rem 2rem !important; }
+.btn-icon { border-radius: 50% !important; }
+.btn-icon-sm { border-radius: 50% !important; }
+
+/* ============================================================
+   HOME PAGE BUTTONS — Extra Premium
+   ============================================================ */
+
+/* Home card primary → gold-rose gradient */
+.home-card .btn-primary {
+  background: var(--grad-gold) !important;
+  color: #fff !important;
+  padding: 0.9rem !important;
+  font-size: 0.95rem !important;
+  font-weight: 800 !important;
+  border-radius: var(--r-pill) !important;
+  box-shadow: 0 4px 24px rgba(255, 107, 107, 0.4), 0 2px 8px rgba(255, 77, 148, 0.3) !important;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+.home-card .btn-primary:hover {
+  box-shadow: 0 8px 36px rgba(255, 107, 107, 0.55), 0 4px 14px rgba(255, 77, 148, 0.4) !important;
+  filter: brightness(1.1) saturate(1.2) !important;
+}
+
+/* Join row button → vibrant blue-cyan */
+.join-row .btn-secondary {
+  background: var(--grad-secondary) !important;
+  color: #fff !important;
+  border: none !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: var(--r-pill) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 20px rgba(79, 172, 254, 0.4) !important;
+}
+.join-row .btn-secondary:hover {
+  transform: translateY(-2px) scale(1.03) !important;
+  box-shadow: 0 8px 28px rgba(0, 242, 254, 0.5) !important;
+  filter: brightness(1.1) !important;
+}
+
+/* ============================================================
+   ALL INPUTS — COLORFUL FOCUS, ANIMATED GLOW, PREMIUM
+   ============================================================ */
+
+.input-field {
+  border-radius: var(--r-lg) !important;
+  border: 2px solid var(--border) !important;
+  background: var(--bg-input) !important;
+  transition: all 0.3s var(--ease) !important;
+  position: relative;
+}
+.input-field:focus {
+  border-color: transparent !important;
+  box-shadow: 0 0 0 2px var(--primary), 0 0 20px var(--glow-sm), 0 4px 16px var(--glow-sm) !important;
+  background: var(--bg-input-focus) !important;
+  transform: translateY(-1px);
+}
+.input-field::placeholder { color: var(--text-muted); }
+
+/* Home card input → pill-shaped, premium */
+.home-card .input-field {
+  border-radius: var(--r-pill) !important;
+  padding: 0.85rem 1.25rem !important;
+  border: 2px solid var(--border) !important;
+  font-size: 0.95rem !important;
+}
+.home-card .input-field:focus {
+  border-color: transparent !important;
+  box-shadow: 0 0 0 2px #f093fb, 0 0 24px rgba(240, 147, 251, 0.3) !important;
+}
+
+/* Join row code input → colorful, centered pill */
+.join-row .input-field {
+  border-radius: var(--r-pill) !important;
+  border: 2px solid var(--border) !important;
+  background: linear-gradient(135deg, var(--bg-input) 0%, rgba(180, 160, 255, 0.05) 100%) !important;
+}
+.join-row .input-field:focus {
+  border-color: transparent !important;
+  box-shadow: 0 0 0 2px #4facfe, 0 0 24px rgba(79, 172, 254, 0.3) !important;
+}
+
+/* Chat input → colorful pill */
+.chat-input-bar .input-field {
+  border-radius: var(--r-pill) !important;
+  border: 2px solid var(--border) !important;
+}
+.chat-input-bar .input-field:focus {
+  border-color: transparent !important;
+  box-shadow: 0 0 0 2px var(--primary), 0 0 16px var(--glow-sm) !important;
+}
+
+/* ============================================================
+   GATE FORM (Room Name Entry) — LUXURIOUS & COLORFUL
+   ============================================================ */
+
+.gate-input {
+  border-radius: var(--r-pill) !important;
+  border: 2px solid var(--border) !important;
+  padding: 0.9rem 2.75rem 0.9rem 2.75rem !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  background: linear-gradient(135deg, var(--bg-input) 0%, rgba(180, 160, 255, 0.04) 100%) !important;
+  transition: all 0.3s var(--ease) !important;
+}
+.gate-input:focus {
+  border-color: transparent !important;
+  box-shadow: 0 0 0 2px #667eea, 0 0 28px rgba(102, 126, 234, 0.35), 0 4px 16px rgba(0,0,0,0.1) !important;
+  background: var(--bg-input-focus) !important;
+  transform: translateY(-1px);
+}
+.gate-input::placeholder { color: var(--text-muted); }
+
+/* Gate input icon → colorful */
+.gate-input-icon svg { color: #667eea !important; transition: all 0.3s var(--ease); }
+.gate-input-wrap:focus-within .gate-input-icon svg { color: #f093fb !important; transform: scale(1.15); }
+
+/* Gate button → vibrant multi-color gradient pill */
+.gate-btn {
+  border-radius: var(--r-pill) !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 35%, #f093fb 70%, #FFD700 100%) !important;
+  color: #fff !important;
+  padding: 1rem 1.5rem !important;
+  font-size: 1rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.02em !important;
+  box-shadow: 0 6px 28px rgba(118, 75, 162, 0.5), 0 3px 12px rgba(240, 147, 251, 0.3) !important;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  background-size: 200% 200% !important;
+  animation: gateBtnGradient 4s ease-in-out infinite;
+  transition: all 0.3s var(--ease-spring) !important;
+}
+@keyframes gateBtnGradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.gate-btn:hover {
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 10px 40px rgba(240, 147, 251, 0.55), 0 5px 16px rgba(255, 215, 0, 0.3) !important;
+  filter: brightness(1.1) saturate(1.2) !important;
+}
+.gate-btn:active { transform: translateY(0) scale(0.98) !important; }
+
+/* Gate button icon → white */
+.gate-btn .gate-btn-icon svg,
+.gate-btn-icon svg { color: #fff !important; }
+
+/* ============================================================
+   CREATE ROOM MODAL — PREMIUM COLORFUL
+   ============================================================ */
+
+#createRoomModal .cr-modal {
+  border-radius: 24px !important;
+  border: 1px solid var(--border-strong) !important;
+  box-shadow: 0 20px 80px rgba(118, 75, 162, 0.4), 0 0 0 1px rgba(240, 147, 251, 0.15) !important;
+  background: var(--bg-modal) !important;
+}
+
+/* Create Room modal input → pill, colorful */
+#createRoomModal .gate-input {
+  border-radius: var(--r-pill) !important;
+}
+
+/* Create Room confirm button → gold gradient pill */
+#crConfirmBtn.btn-primary {
+  background: var(--grad-gold) !important;
+  border-radius: var(--r-pill) !important;
+  padding: 0.9rem !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 24px rgba(255, 107, 107, 0.4) !important;
+}
+#crConfirmBtn.btn-primary:hover {
+  box-shadow: 0 8px 36px rgba(255, 215, 0, 0.5) !important;
+  filter: brightness(1.1) saturate(1.15) !important;
+}
+
+/* ============================================================
+   HEADER BUTTONS — COLORFUL GRADIENTS
+   ============================================================ */
+
+.header-btn {
+  background: linear-gradient(135deg, rgba(199, 184, 255, 0.15) 0%, rgba(157, 138, 224, 0.1) 100%) !important;
+  border: 1px solid var(--border-strong) !important;
+  border-radius: var(--r-pill) !important;
+  color: var(--primary) !important;
+  transition: all 0.3s var(--ease-spring) !important;
+}
+.header-btn:hover {
+  background: linear-gradient(135deg, rgba(199, 184, 255, 0.28) 0%, rgba(157, 138, 224, 0.18) 100%) !important;
+  border-color: var(--primary) !important;
+  transform: scale(1.08) !important;
+  box-shadow: 0 4px 16px var(--glow-sm) !important;
+}
+.header-btn svg { color: var(--primary) !important; }
+
+[data-theme="light"] .header-btn {
+  background: linear-gradient(135deg, rgba(107, 91, 192, 0.1) 0%, rgba(85, 71, 168, 0.06) 100%) !important;
+  color: var(--primary-deep) !important;
+}
+[data-theme="light"] .header-btn svg { color: var(--primary-deep) !important; }
+
+/* ============================================================
+   MEDIA BUTTON — VIBRANT GRADIENT
+   ============================================================ */
+
+.media-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border: none !important;
+  border-radius: var(--r-pill) !important;
+  color: #fff !important;
+  padding: 0.35rem 0.9rem !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 12px rgba(102, 126, 234, 0.35) !important;
+  transition: all 0.3s var(--ease-spring) !important;
+}
+.media-btn:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #f093fb 100%) !important;
+  transform: scale(1.05) !important;
+  box-shadow: 0 4px 20px rgba(240, 147, 251, 0.4) !important;
+  filter: brightness(1.1) !important;
+}
+.media-btn svg { color: #fff !important; }
+
+[data-theme="light"] .media-btn {
+  background: linear-gradient(135deg, #6B5BC0 0%, #5547a8 100%) !important;
+  color: #fff !important;
+}
+
+/* ============================================================
+   ROOM CODE CHIP — COLORFUL PILL
+   ============================================================ */
+
+.room-code-chip {
+  border-radius: var(--r-pill) !important;
+  background: linear-gradient(135deg, rgba(79, 172, 254, 0.12) 0%, rgba(0, 242, 254, 0.08) 100%) !important;
+  border: 1px solid rgba(79, 172, 254, 0.25) !important;
+  transition: all 0.3s var(--ease-spring) !important;
+}
+.room-code-chip:hover {
+  background: linear-gradient(135deg, rgba(79, 172, 254, 0.2) 0%, rgba(0, 242, 254, 0.14) 100%) !important;
+  border-color: rgba(79, 172, 254, 0.5) !important;
+  transform: scale(1.03) !important;
+  box-shadow: 0 2px 12px rgba(79, 172, 254, 0.25) !important;
+}
+.room-code-chip svg { color: #4facfe !important; }
+.room-code-text { color: #4facfe !important; }
+
+[data-theme="light"] .room-code-chip {
+  background: linear-gradient(135deg, rgba(79, 172, 254, 0.08) 0%, rgba(0, 242, 254, 0.05) 100%) !important;
+}
+
+/* ============================================================
+   VIDEO CONTROL BUTTONS — COLORFUL ROUND
+   ============================================================ */
+
+.ctrl-btn {
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, var(--bg-elevated) 0%, rgba(180, 160, 255, 0.08) 100%) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  transition: all 0.25s var(--ease-spring) !important;
+}
+.ctrl-btn:hover {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+  color: #fff !important;
+  transform: scale(1.1) !important;
+  box-shadow: 0 4px 16px var(--glow-sm) !important;
+  border-color: var(--primary) !important;
+}
+.ctrl-btn:active { transform: scale(0.92) !important; }
+
+/* ============================================================
+   CHAT ACTION BUTTONS — COLORFUL ROUND
+   ============================================================ */
+
+.voice-action-btn {
+  background: linear-gradient(135deg, rgba(67, 233, 123, 0.15) 0%, rgba(56, 249, 215, 0.1) 100%) !important;
+  border: 1px solid rgba(67, 233, 123, 0.3) !important;
+  color: #43e97b !important;
+}
+.voice-action-btn:hover {
+  background: var(--grad-success) !important;
+  color: #fff !important;
+  transform: scale(1.08) !important;
+  box-shadow: 0 4px 16px rgba(67, 233, 123, 0.35) !important;
+}
+
+.send-action-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 16px rgba(118, 75, 162, 0.4) !important;
+  background-size: 200% 200% !important;
+}
+.send-action-btn:hover {
+  transform: scale(1.08) !important;
+  box-shadow: 0 6px 24px rgba(240, 147, 251, 0.5) !important;
+  filter: brightness(1.1) saturate(1.15) !important;
+}
+
+/* ============================================================
+   THEME TOGGLE — COLORFUL PILL
+   ============================================================ */
+
+.theme-toggle {
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.12) 0%, rgba(255, 77, 148, 0.08) 100%) !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
+  transition: all 0.3s var(--ease-spring) !important;
+}
+.theme-toggle:hover {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 77, 148, 0.15) 100%) !important;
+  border-color: rgba(255, 215, 0, 0.4) !important;
+  transform: scale(1.1) rotate(15deg) !important;
+  box-shadow: 0 4px 16px rgba(255, 215, 0, 0.2) !important;
+}
+
+/* ============================================================
+   MODAL — PREMIUM COLORFUL BORDER
+   ============================================================ */
+
+.modal {
+  border: 1px solid var(--border-strong) !important;
+  box-shadow: 0 20px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(180, 160, 255, 0.1) !important;
+}
+@media (min-width: 600px) {
+  .modal {
+    border-radius: 24px !important;
+  }
+}
+
+.modal-overlay {
+  background: rgba(5, 5, 12, 0.75) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+/* Modal close → colorful round */
+.modal-close {
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, var(--bg-elevated) 0%, rgba(239, 68, 68, 0.08) 100%) !important;
+  border: 1px solid var(--border) !important;
+  transition: all 0.3s var(--ease-spring) !important;
+}
+.modal-close:hover {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(255, 8, 68, 0.15) 100%) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  color: #ff0844 !important;
+  transform: rotate(90deg) scale(1.1) !important;
+}
+
+/* ============================================================
+   BOTTOM TABS — COLORFUL ACTIVE STATE
+   ============================================================ */
+
+.bottom-tab {
+  transition: all 0.3s var(--ease) !important;
+  border-bottom: 2px solid transparent !important;
+}
+.bottom-tab.active {
+  color: #f093fb !important;
+  border-bottom-color: #f093fb !important;
+}
+.bottom-tab.active svg { color: #f093fb !important; }
+
+/* ============================================================
+   SETTINGS TABS — COLORFUL
+   ============================================================ */
+
+.settings-tab.active {
+  color: #667eea !important;
+  border-bottom-color: #667eea !important;
+}
+
+/* ============================================================
+   FEATURE PILLS — COLORFUL GRADIENTS
+   ============================================================ */
+
+.feature-pill {
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(180, 160, 255, 0.06) 100%) !important;
+  border: 1px solid var(--border-strong) !important;
+  border-radius: var(--r-pill) !important;
+  transition: all 0.3s var(--ease-spring) !important;
+}
+.feature-pill:hover {
+  background: linear-gradient(135deg, rgba(199, 184, 255, 0.15) 0%, rgba(240, 147, 251, 0.1) 100%) !important;
+  border-color: var(--primary) !important;
+  transform: translateY(-2px) scale(1.03) !important;
+  box-shadow: 0 4px 16px var(--glow-sm) !important;
+}
+.feature-pill svg {
+  transition: transform 0.3s var(--ease-spring);
+}
+.feature-pill:hover svg {
+  transform: scale(1.2) rotate(5deg);
+  color: #f093fb !important;
+}
+
+/* ============================================================
+   HOME EYEBROW — COLORFUL
+   ============================================================ */
+
+.home-eyebrow {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 77, 148, 0.08) 100%) !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
+  border-radius: var(--r-pill) !important;
+  color: #FFD700 !important;
+}
+.home-eyebrow .dot {
+  background: #43e97b !important;
+  box-shadow: 0 0 8px rgba(67, 233, 123, 0.5);
+}
+
+/* ============================================================
+   DIVIDER — COLORFUL GRADIENT LINE
+   ============================================================ */
+
+.divider::before, .divider::after {
+  background: linear-gradient(90deg, transparent, var(--border-strong), transparent) !important;
+  height: 1.5px !important;
+}
+.divider span {
+  color: var(--primary) !important;
+  background: linear-gradient(135deg, #667eea, #f093fb);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ============================================================
+   HOME CARD — PREMIUM COLORFUL BORDER GLOW
+   ============================================================ */
+
+.home-card {
+  border-radius: 24px !important;
+  border: 1px solid var(--border-strong) !important;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(180, 160, 255, 0.08) !important;
+  position: relative;
+}
+.home-card::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 24px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(240, 147, 251, 0.2), rgba(255, 215, 0, 0.15));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ============================================================
+   NOTIFICATION/TOAST — COLORFUL GRADIENT
+   ============================================================ */
+
+.notification {
+  border-radius: var(--r-pill) !important;
+  font-weight: 700 !important;
+}
+.notification.success {
+  background: var(--grad-success) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 20px rgba(67, 233, 123, 0.4) !important;
+}
+.notification.error {
+  background: var(--grad-danger) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 20px rgba(255, 8, 68, 0.4) !important;
+}
+.notification.info {
+  background: var(--grad-primary) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 20px rgba(118, 75, 162, 0.4) !important;
+}
+.notification.warning {
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4) !important;
+}
+
+/* ============================================================
+   AMBIENT BACKGROUND — MORE COLORFUL
+   ============================================================ */
+
+body::before {
+  background:
+    radial-gradient(ellipse 70% 50% at 50% -10%, rgba(102, 126, 234, 0.1) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 90% 90%, rgba(240, 147, 251, 0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 30% 20% at 10% 80%, rgba(79, 172, 254, 0.05) 0%, transparent 60%) !important;
+}
+
+.home-wrapper::before {
+  background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%) !important;
+}
+.home-wrapper::after {
+  background: radial-gradient(circle, rgba(240, 147, 251, 0.08) 0%, transparent 70%) !important;
+}
+
+/* ============================================================
+   QUALITY BUTTON — COLORFUL PILL
+   ============================================================ */
+
+.quality-btn {
+  border-radius: var(--r-pill) !important;
+  background: linear-gradient(135deg, rgba(79, 172, 254, 0.12) 0%, rgba(0, 242, 254, 0.08) 100%) !important;
+  border: 1px solid rgba(79, 172, 254, 0.25) !important;
+  color: #4facfe !important;
+  transition: all 0.3s var(--ease) !important;
+}
+.quality-btn:hover {
+  background: linear-gradient(135deg, rgba(79, 172, 254, 0.22) 0%, rgba(0, 242, 254, 0.15) 100%) !important;
+  border-color: rgba(79, 172, 254, 0.5) !important;
+  box-shadow: 0 2px 12px rgba(79, 172, 254, 0.25) !important;
+}
+
+/* ============================================================
+   HOST BADGE — KEEP GOLD, ENHANCE
+   ============================================================ */
+
+.host-badge {
+  border-radius: var(--r-pill) !important;
+}
+
+/* ============================================================
+   GATE ROOM CODE — COLORFUL PILL
+   ============================================================ */
+
+.gate-room-code {
+  border-radius: var(--r-pill) !important;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.12) 0%, rgba(240, 147, 251, 0.08) 100%) !important;
+  border: 1px solid rgba(102, 126, 234, 0.25) !important;
+  color: #667eea !important;
+}
+.gate-room-code:hover {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(240, 147, 251, 0.14) 100%) !important;
+  border-color: rgba(102, 126, 234, 0.45) !important;
+  box-shadow: 0 2px 12px rgba(102, 126, 234, 0.25) !important;
+}
+
+/* ============================================================
+   AVATAR COLOR SWATCHES — ENHANCED
+   ============================================================ */
+
+.gate-swatch {
+  transition: all 0.25s var(--ease-spring) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.gate-swatch:hover {
+  transform: scale(1.25) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3) !important;
+}
+.gate-swatch.active {
+  transform: scale(1.2) !important;
+  box-shadow: 0 0 0 3px var(--bg-modal), 0 0 0 5px currentColor, 0 4px 16px rgba(0,0,0,0.3) !important;
+}
+
+/* ============================================================
+   SEEK SLIDER — COLORFUL THUMB
+   ============================================================ */
+
+.seek-slider {
+  background: linear-gradient(90deg, rgba(102, 126, 234, 0.3), rgba(240, 147, 251, 0.2)) !important;
+  border-radius: var(--r-pill) !important;
+}
+.seek-slider::-webkit-slider-thumb {
+  background: linear-gradient(135deg, #667eea, #f093fb) !important;
+  box-shadow: 0 0 8px rgba(240, 147, 251, 0.5) !important;
+}
+.seek-slider::-moz-range-thumb {
+  background: linear-gradient(135deg, #667eea, #f093fb) !important;
+  box-shadow: 0 0 8px rgba(240, 147, 251, 0.5) !important;
+}
+
+/* ============================================================
+   AUDIO SLIDER — COLORFUL
+   ============================================================ */
+
+.audio-slider {
+  background: linear-gradient(90deg, rgba(102, 126, 234, 0.3), rgba(240, 147, 251, 0.2)) !important;
+  border-radius: var(--r-pill) !important;
+}
+
+/* ============================================================
+   CARD — COLORFUL BORDER
+   ============================================================ */
+
+.card {
+  border: 1px solid var(--border-strong) !important;
+}
+
+/* ============================================================
+   USER ITEMS — COLORFUL
+   ============================================================ */
+
+.user-item {
+  border-radius: var(--r-pill) !important;
+  transition: all 0.25s var(--ease) !important;
+}
+.user-item:hover {
+  border-color: var(--primary) !important;
+  box-shadow: 0 2px 12px var(--glow-sm) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ============================================================
+   CHAT MESSAGE — COLORFUL ENHANCEMENT
+   ============================================================ */
+
+.chat-message {
+  border-radius: var(--r-lg) !important;
+  border: 1px solid var(--border) !important;
+  transition: all 0.2s var(--ease) !important;
+}
+
+/* ============================================================
+   ROOM HEADER — COLORFUL GRADIENT
+   ============================================================ */
+
+.room-header {
+  background: linear-gradient(180deg, rgba(15, 15, 30, 0.95) 0%, rgba(12, 12, 25, 0.92) 100%) !important;
+  border-bottom: 1px solid var(--border-strong) !important;
+}
+[data-theme="light"] .room-header {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.97) 0%, rgba(248, 248, 255, 0.95) 100%) !important;
+}
+
+/* ============================================================
+   DUB RETRY BAR — COLORFUL PILL
+   ============================================================ */
+
+.dub-retry-bar {
+  border-radius: var(--r-pill) !important;
+}
+.dub-retry-btn {
+  border-radius: var(--r-pill) !important;
+}
+
+/* ============================================================
+   SETTINGS INPUT ROW BUTTONS — PILL
+   ============================================================ */
+
+.settings-input-row .btn { border-radius: var(--r-pill) !important; }
+
+/* ============================================================
+   MEDIA MODAL TABS — COLORFUL
+   ============================================================ */
+
+.media-modal-tab {
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s var(--ease) !important;
+}
+.media-modal-tab.active {
+  color: #667eea !important;
+  border-bottom-color: #667eea !important;
+}
+
+/* ============================================================
+   SE TABS — COLORFUL
+   ============================================================ */
+
+.se-tab {
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s var(--ease) !important;
+}
+.se-tab.active {
+  color: #f093fb !important;
+  border-bottom-color: #f093fb !important;
+}
+
+/* ============================================================
+   SEARCH BUTTONS — COLORFUL
+   ============================================================ */
+
+.mb-search-btn {
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  transition: all 0.3s var(--ease-spring) !important;
+}
+.mb-search-btn:hover {
+  transform: scale(1.08) !important;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4) !important;
+}
+
+.load-btn, .se-load-btn, .se-search-btn {
+  border-radius: var(--r-pill) !important;
+}
+
+/* ============================================================
+   BACK BUTTON — COLORFUL
+   ============================================================ */
+
+.se-back-btn {
+  border-radius: var(--r-pill) !important;
+  background: linear-gradient(135deg, rgba(79, 172, 254, 0.12) 0%, rgba(0, 242, 254, 0.08) 100%) !important;
+  border: 1px solid rgba(79, 172, 254, 0.25) !important;
+  color: #4facfe !important;
+  transition: all 0.3s var(--ease) !important;
+}
+
+/* ============================================================
+   SYNC TAP BUTTON — COLORFUL
+   ============================================================ */
+
+.sync-tap-btn {
+  border-radius: var(--r-pill) !important;
+  transition: all 0.3s var(--ease-spring) !important;
+}
+
+/* ============================================================
+   MB PILLS & CAT CHIPS — ENHANCED
+   ============================================================ */
+
+.mb-pill {
+  border-radius: var(--r-pill) !important;
+  transition: all 0.3s var(--ease-spring) !important;
+}
+.mb-pill.active {
+  background: linear-gradient(135deg, #667eea 0%, #f093fb 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 12px rgba(240, 147, 251, 0.35) !important;
+}
+
+.mb-cat-chip {
+  border-radius: var(--r-pill) !important;
+  transition: all 0.3s var(--ease-spring) !important;
+}
+.mb-cat-chip.active {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3) !important;
+  transform: scale(1.05) !important;
+}
+
+/* ============================================================
+   LANG BUTTON — COLORFUL
+   ============================================================ */
+
+.lang-btn {
+  border-radius: var(--r-pill) !important;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 77, 148, 0.08) 100%) !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
+  color: #FFD700 !important;
+  transition: all 0.3s var(--ease) !important;
+}
+.lang-btn:hover {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 77, 148, 0.15) 100%) !important;
+  border-color: rgba(255, 215, 0, 0.4) !important;
+  box-shadow: 0 2px 12px rgba(255, 215, 0, 0.2) !important;
+}
+
+/* ============================================================
+   GATE THEME TOGGLE — COLORFUL
+   ============================================================ */
+
+.gate-theme-toggle {
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.12) 0%, rgba(255, 77, 148, 0.08) 100%) !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
+}
+
+/* ============================================================
+   MUTE BUTTON — COLORFUL
+   ============================================================ */
+
+.mute-btn:hover {
+  background: linear-gradient(135deg, rgba(255, 77, 148, 0.15) 0%, rgba(255, 8, 68, 0.1) 100%) !important;
+  color: #ff0844 !important;
+}
+
+/* ============================================================
+   RECENT ROOM ITEMS — COLORFUL
+   ============================================================ */
+
+.recent-room-item {
+  border-radius: var(--r-pill) !important;
+  transition: all 0.25s var(--ease) !important;
+}
+.recent-room-item:hover {
+  border-color: var(--primary) !important;
+  box-shadow: 0 2px 12px var(--glow-sm) !important;
+  transform: translateX(4px) !important;
+}
+
+/* ============================================================
+   VIDEO PLACEHOLDER BUTTON — PILL
+   ============================================================ */
+
+.placeholder-btn {
+  border-radius: var(--r-pill) !important;
+}
+
+/* ============================================================
+   SMOOTH SCROLLBARS
+   ============================================================ */
+
+.chat-messages::-webkit-scrollbar,
+.modal-body::-webkit-scrollbar,
+.user-list::-webkit-scrollbar {
+  width: 4px;
+}
+.chat-messages::-webkit-scrollbar-thumb,
+.modal-body::-webkit-scrollbar-thumb,
+.user-list::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--primary), var(--primary-dark)) !important;
+  border-radius: var(--r-pill) !important;
+}
+
+/* ============================================================
+   PANEL HEADER — COLORFUL ICON
+   ============================================================ */
+
+.panel-header svg { color: #667eea !important; }
+
+/* ============================================================
+   MODE INDICATOR — ENHANCED
+   ============================================================ */
+
+.mode-indicator {
+  border-radius: var(--r-pill) !important;
+}
